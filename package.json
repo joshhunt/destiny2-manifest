@@ -1,6 +1,6 @@
 {
   "name": "destiny2-manifest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "unapologetically poorly coded class for accessing the d2 manifest",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
