@@ -1,5 +1,5 @@
 {
-  "name": "d2-manifest",
+  "name": "destiny2-manifest",
   "version": "1.0.0",
   "description": "unapologetically poorly coded class for accessing the d2 manifest",
   "main": "lib/index.js",
@@ -8,10 +8,10 @@
     "lib/**/*"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"no test specified\" && exit 0",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "tslint -p tsconfig.json",
+    "lint": "eslint src --ext .js,.ts,.tsx",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
@@ -19,19 +19,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sundevour/d2-manifest.git"
+    "url": "git+https://github.com/sundevour/destiny2-manifest.git"
   },
   "keywords": [],
   "author": "sundevour",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sundevour/d2-manifest/issues"
+    "url": "https://github.com/sundevour/destiny2-manifest/issues"
   },
-  "homepage": "https://github.com/sundevour/d2-manifest#readme",
+  "homepage": "https://github.com/sundevour/destiny2-manifest#readme",
   "devDependencies": {
     "@types/node": "^13.7.1",
+    "@typescript-eslint/eslint-plugin": "^2.19.2",
+    "@typescript-eslint/parser": "^2.19.2",
     "eslint": "^6.8.0",
     "prettier": "^1.19.1",
+    "prettier-eslint": "^9.0.1",
     "typescript": "^3.7.5"
   },
   "dependencies": {

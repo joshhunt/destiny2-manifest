@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import axios from 'axios';
 import { sep } from 'path';
+
 // import { DestinyInventoryItemDefinition } from 'bungie-api-ts/destiny2';
 // import { DestinyJSONManifest, DestinyDefinitionFrom, DestinyManifestTableName } from './defs';
 
@@ -34,8 +35,8 @@ export default class D2Manifest {
   }
   latest() {
     const latestFile = fs.readdirSync(this.manifestsPath).sort((a, b) => {
-      const a_ = a.split(/[-\.]/);
-      const b_ = b.split(/[-\.]/);
+      const a_ = a.split(/[-.]/);
+      const b_ = b.split(/[-.]/);
       for (var i = 0; i < a_.length; i++) {
         let comparison = Number(a_[i]) - Number(b_[i]);
         if (comparison) return comparison;
@@ -127,9 +128,9 @@ function tierName(entry: any) {
   return (entry?.tierName ?? '').toLowerCase();
 }
 
-function lc(string: string) {
-  return string.toLowerCase();
-}
+// function lc(string: string) {
+//   return string.toLowerCase();
+// }
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -188,7 +189,7 @@ import {
   DestinyEnergyTypeDefinition,
 } from 'bungie-api-ts/destiny2';
 
-export interface DestinyJSONManifest {
+interface DestinyJSONManifest {
   DestinyPlaceDefinition: { [key: number]: DestinyPlaceDefinition };
   DestinyActivityDefinition: { [key: number]: DestinyActivityDefinition };
   DestinyActivityTypeDefinition: { [key: number]: DestinyActivityTypeDefinition };

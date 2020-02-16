@@ -1,1 +1,1 @@
-# d2-manifest
+# destiny2-manifest
