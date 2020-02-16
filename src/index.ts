@@ -2,11 +2,11 @@ import * as fs from 'fs';
 import axios from 'axios';
 import { sep } from 'path';
 
-// import { DestinyInventoryItemDefinition } from 'bungie-api-ts/destiny2';
-// import { DestinyJSONManifest, DestinyDefinitionFrom, DestinyManifestTableName } from './defs';
-
 const preferredCategories = [1, 20, 18, 19, 16, 34, 35, 39, 42, 43, 44, 53, 1784235469, 2088636411];
 
+/**
+ * FEED ME A STRAY API TOKEN
+ */
 export default class D2Manifest {
   apiToken: string;
   language: string;
@@ -19,6 +19,11 @@ export default class D2Manifest {
     this.verbose = verbose;
     this.manifestsPath = manifestsPath;
   }
+
+  /**
+   * loads the ALREADY saved manifest file
+   * update()s one from the internet if none is found
+   */
   async load() {
     if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
     if (this.latest()) {
@@ -45,6 +50,12 @@ export default class D2Manifest {
     })[0];
     return latestFile;
   }
+
+  /**
+   * checks bungie.net for the current manifest version
+   * downloads a copy if there's a newer version than saved
+   * always load()s the newest manifest afterward
+   */
   async update() {
     if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
     try {
@@ -68,6 +79,12 @@ export default class D2Manifest {
     }
   }
 
+  /**
+   * searches an entire manifest table, doing case-insenstive string matching.
+   * checks against name, description, progressDescription, statName, tierName.
+   * prefers matching search term to the entire word.
+   * prefers major item categories, trying to avoid weird same-named stuff like catalysts.
+   */
   find<K extends keyof DestinyJSONManifest>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean) {
     let searchResults: DestinyDefinitionFrom<K>[] = [];
     let needles: RegExp[];
@@ -96,6 +113,8 @@ export default class D2Manifest {
     const finalSearchResults = filteredSearchResults.length ? filteredSearchResults : searchResults;
     return finalSearchResults;
   }
+
+  /** performs a lookup of a known hash */
   get<K extends DestinyManifestTableName>(
     tableName: K,
     hash: number | undefined,
@@ -103,6 +122,7 @@ export default class D2Manifest {
     return this.manifest?.[tableName][hash ?? -99999999];
   }
 
+  /** returns an array of table contents */
   getAll<K extends DestinyManifestTableName>(
     tableName: K,
     tableFilter?: (entry: any) => boolean,
@@ -111,26 +131,22 @@ export default class D2Manifest {
   }
 }
 
-// item.displayProperties.name||item.progressDescription||item.statName||item.tierName
 function name(entry: any) {
-  return (entry?.displayProperties?.name ?? '').toLowerCase();
+  return entry?.displayProperties?.name ?? '';
 }
 function description(entry: any) {
-  return (entry?.displayProperties?.description ?? '').toLowerCase();
+  return entry?.displayProperties?.description ?? '';
 }
 function progressDescription(entry: any) {
-  return (entry?.progressDescription ?? '').toLowerCase();
+  return entry?.progressDescription ?? '';
 }
 function statName(entry: any) {
-  return (entry?.statName ?? '').toLowerCase();
+  return entry?.statName ?? '';
 }
 function tierName(entry: any) {
-  return (entry?.tierName ?? '').toLowerCase();
+  return entry?.tierName ?? '';
 }
 
-// function lc(string: string) {
-//   return string.toLowerCase();
-// }
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
