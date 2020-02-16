@@ -1,0 +1,41 @@
+{
+  "name": "d2-manifest",
+  "version": "1.0.0",
+  "description": "unapologetically poorly coded class for accessing the d2 manifest",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sundevour/d2-manifest.git"
+  },
+  "keywords": [],
+  "author": "sundevour",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sundevour/d2-manifest/issues"
+  },
+  "homepage": "https://github.com/sundevour/d2-manifest#readme",
+  "devDependencies": {
+    "@types/node": "^13.7.1",
+    "eslint": "^6.8.0",
+    "prettier": "^1.19.1",
+    "typescript": "^3.7.5"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bungie-api-ts": "^2.3.0"
+  }
+}
