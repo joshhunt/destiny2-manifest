@@ -1,8 +1,10 @@
 # destiny2-manifest
 
-a simple class with functions to download and access the d2 manifest  
+a simple (node!) class with functions to download and access the d2 manifest  
 
 ```node
+// example.js
+
 const D2Manifest = require('destiny2-manifest').default;
 const manifest = new D2Manifest('asdf');
 
@@ -23,8 +25,10 @@ i mainly wanted a simple way to pull pre-typed records from the manifest
 this returns records with [bungie-api-ts](https://github.com/DestinyItemManager/bungie-api-ts) definitions  
 
 ```node
+// example.ts
+
 import D2Manifest from "destiny2-manifest";
-// [...]
+// [...etc...]
 const myItem = manifest.get('DestinyInventoryItemDefinition', 460688465);
 
 myItem.icon;
