@@ -13,7 +13,18 @@ export default class D2Manifest {
   verbose: boolean;
   manifestsPath: string;
   manifest: DestinyJSONManifest | undefined;
-  constructor(apiToken: string, language = 'en', verbose = true, manifestsPath = `.${sep}manifest${sep}`) {
+  /**
+   * @param apiToken api token for bungie.net
+   * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
+   * @param verbose console log steps during async methods
+   * @param manifestsPath where to store/load manifests (default "./manifest")
+   */
+  constructor(
+    apiToken: string,
+    language: string = 'en',
+    verbose: boolean = false,
+    manifestsPath: string = `.${sep}manifest${sep}`,
+  ) {
     this.apiToken = apiToken;
     this.language = language;
     this.verbose = verbose;
@@ -35,11 +46,11 @@ export default class D2Manifest {
       }
     } else {
       this.verbose && console.log('no latest manifest found. updating to get one.');
-      this.update();
+      await this.update();
     }
   }
   latest() {
-    const latestFile = fs.readdirSync(this.manifestsPath).sort((a, b) => {
+    const manifestsByVersion = fs.readdirSync(this.manifestsPath).sort((a, b) => {
       const a_ = a.split(/[-.]/);
       const b_ = b.split(/[-.]/);
       for (var i = 0; i < a_.length; i++) {
@@ -47,8 +58,8 @@ export default class D2Manifest {
         if (comparison) return comparison;
       }
       return 0;
-    })[0];
-    return latestFile;
+    });
+    return manifestsByVersion[0];
   }
 
   /**
@@ -57,22 +68,31 @@ export default class D2Manifest {
    * always load()s the newest manifest afterward
    */
   async update() {
-    if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
+    if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath, { recursive: true });
     try {
-      const manifestList = await axios.get('http://www.bungie.net/platform/Destiny2/Manifest/', {
-        headers: { 'X-API-Key': this.apiToken },
-      });
-      if (manifestList.data.Response.version + '.json' === this.latest()) {
+      const manifestList: DestinyManifest = (
+        await axios.get('http://www.bungie.net/platform/Destiny2/Manifest/', {
+          headers: { 'X-API-Key': this.apiToken },
+        })
+      ).data.Response;
+      if (manifestList.version + '.json' === this.latest()) {
         this.verbose && console.log('manifest already up to date');
       } else {
-        var newManifestFile = fs.createWriteStream(this.manifestsPath + manifestList.data.Response.version + '.json');
+        var newManifestFile = fs.createWriteStream(this.manifestsPath + manifestList.version + '.json');
+        var writeFinished = new Promise(function(resolve, reject) {
+          newManifestFile.on('close', resolve);
+          newManifestFile.on('error', reject);
+        });
         await axios
-          .get(`https://www.bungie.net${manifestList.data.Response.jsonWorldContentPaths[this.language]}`)
-          .then(function(response) {
+          .get(`https://www.bungie.net${manifestList.jsonWorldContentPaths[this.language]}`, {
+            responseType: 'stream',
+          })
+          .then((response) => {
             response.data.pipe(newManifestFile);
           });
+        await writeFinished;
         this.verbose && console.log('manifest updated. loading update.');
-        this.load();
+        await this.load();
       }
     } catch (e) {
       console.log(e);
@@ -203,6 +223,7 @@ import {
   DestinyBreakerTypeDefinition,
   DestinyChecklistDefinition,
   DestinyEnergyTypeDefinition,
+  DestinyManifest,
 } from 'bungie-api-ts/destiny2';
 
 interface DestinyJSONManifest {
