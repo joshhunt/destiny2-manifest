@@ -37,9 +37,11 @@ export default class D2Manifest {
    */
   async load() {
     if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
-    if (this.latest()) {
+    const latestManifest = this.latest();
+    if (latestManifest) {
+      this.verbose && console.log(`loading latest saved manifest: ${latestManifest}`);
       try {
-        this.manifest = JSON.parse(fs.readFileSync(this.manifestsPath + this.latest(), 'utf8'));
+        this.manifest = JSON.parse(fs.readFileSync(this.manifestsPath + latestManifest, 'utf8'));
         this.verbose && console.log('manifest loaded');
       } catch (e) {
         console.log(e);
@@ -75,7 +77,9 @@ export default class D2Manifest {
           headers: { 'X-API-Key': this.apiToken },
         })
       ).data.Response;
-      if (manifestList.version + '.json' === this.latest()) {
+      const latestManifest = this.latest();
+      this.verbose && console.log(`saved: ${latestManifest} -- bungie.net: ${manifestList.version}`);
+      if (manifestList.version + '.json' === latestManifest) {
         this.verbose && console.log('manifest already up to date');
       } else {
         var newManifestFile = fs.createWriteStream(this.manifestsPath + manifestList.version + '.json');
@@ -108,7 +112,6 @@ export default class D2Manifest {
   find<K extends keyof DestinyJSONManifest>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean) {
     let searchResults: DestinyDefinitionFrom<K>[] = [];
     let needles: RegExp[];
-
     try {
       needles = [new RegExp(`\\b${needle}\\b`, 'i'), new RegExp(needle, 'i'), new RegExp(escapeRegExp(needle), 'i')];
     } catch {
