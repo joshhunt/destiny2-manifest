@@ -1,4 +1,56 @@
 import * as fs from 'fs';
+
+import {
+  DestinyActivityDefinition,
+  DestinyActivityGraphDefinition,
+  DestinyActivityModeDefinition,
+  DestinyActivityModifierDefinition,
+  DestinyActivityTypeDefinition,
+  DestinyArtifactDefinition,
+  DestinyBreakerTypeDefinition,
+  DestinyChecklistDefinition,
+  DestinyClassDefinition,
+  DestinyCollectibleDefinition,
+  DestinyDamageTypeDefinition,
+  DestinyDestinationDefinition,
+  DestinyEnergyTypeDefinition,
+  DestinyEquipmentSlotDefinition,
+  DestinyFactionDefinition,
+  DestinyGenderDefinition,
+  DestinyInventoryBucketDefinition,
+  DestinyInventoryItemDefinition,
+  DestinyItemCategoryDefinition,
+  DestinyItemTierTypeDefinition,
+  DestinyLocationDefinition,
+  DestinyLoreDefinition,
+  DestinyManifest,
+  DestinyMaterialRequirementSetDefinition,
+  DestinyMilestoneDefinition,
+  DestinyObjectiveDefinition,
+  DestinyPlaceDefinition,
+  DestinyPlugSetDefinition,
+  DestinyPresentationNodeDefinition,
+  DestinyProgressionDefinition,
+  DestinyProgressionLevelRequirementDefinition,
+  DestinyProgressionMappingDefinition,
+  DestinyRaceDefinition,
+  DestinyRecordDefinition,
+  DestinyReportReasonCategoryDefinition,
+  DestinyRewardSourceDefinition,
+  DestinySandboxPerkDefinition,
+  DestinySeasonDefinition,
+  DestinySeasonPassDefinition,
+  DestinySocketCategoryDefinition,
+  DestinySocketTypeDefinition,
+  DestinyStatDefinition,
+  DestinyStatGroupDefinition,
+  DestinyTalentGridDefinition,
+  DestinyUnlockDefinition,
+  DestinyUnlockValueDefinition,
+  DestinyVendorDefinition,
+  DestinyVendorGroupDefinition,
+} from 'bungie-api-ts/destiny2';
+
 import axios from 'axios';
 import { sep } from 'path';
 
@@ -178,56 +230,6 @@ function isItem(entry: any): entry is DestinyInventoryItemDefinition {
   return entry.itemCategoryHashes !== undefined;
 }
 
-import {
-  DestinyPlaceDefinition,
-  DestinyActivityDefinition,
-  DestinyActivityTypeDefinition,
-  DestinyClassDefinition,
-  DestinyGenderDefinition,
-  DestinyInventoryBucketDefinition,
-  DestinyRaceDefinition,
-  DestinyTalentGridDefinition,
-  DestinyUnlockDefinition,
-  DestinyMaterialRequirementSetDefinition,
-  DestinySandboxPerkDefinition,
-  DestinyStatGroupDefinition,
-  DestinyProgressionMappingDefinition,
-  DestinyFactionDefinition,
-  DestinyVendorGroupDefinition,
-  DestinyRewardSourceDefinition,
-  DestinyUnlockValueDefinition,
-  DestinyItemCategoryDefinition,
-  DestinyDamageTypeDefinition,
-  DestinyActivityModeDefinition,
-  DestinyActivityGraphDefinition,
-  DestinyCollectibleDefinition,
-  DestinyStatDefinition,
-  DestinyItemTierTypeDefinition,
-  DestinyPlugSetDefinition,
-  DestinyPresentationNodeDefinition,
-  DestinyRecordDefinition,
-  DestinyDestinationDefinition,
-  DestinyEquipmentSlotDefinition,
-  DestinyInventoryItemDefinition,
-  DestinyLocationDefinition,
-  DestinyLoreDefinition,
-  DestinyObjectiveDefinition,
-  DestinyProgressionDefinition,
-  DestinyProgressionLevelRequirementDefinition,
-  DestinySeasonDefinition,
-  DestinySeasonPassDefinition,
-  DestinySocketCategoryDefinition,
-  DestinySocketTypeDefinition,
-  DestinyVendorDefinition,
-  DestinyMilestoneDefinition,
-  DestinyActivityModifierDefinition,
-  DestinyReportReasonCategoryDefinition,
-  DestinyArtifactDefinition,
-  DestinyBreakerTypeDefinition,
-  DestinyChecklistDefinition,
-  DestinyEnergyTypeDefinition,
-  DestinyManifest,
-} from 'bungie-api-ts/destiny2';
 
 interface DestinyJSONManifest {
   DestinyPlaceDefinition: { [key: number]: DestinyPlaceDefinition };
@@ -284,3 +286,148 @@ interface DestinyJSONManifest {
 }
 type DestinyManifestTableName = keyof DestinyJSONManifest;
 type DestinyDefinitionFrom<K extends DestinyManifestTableName> = DestinyJSONManifest[K][number];
+
+
+/*
+
+// hello
+import {
+  DestinyPlaceDefinition,
+  DestinyActivityDefinition,
+  DestinyActivityTypeDefinition,
+  DestinyClassDefinition,
+  DestinyGenderDefinition,
+  DestinyInventoryBucketDefinition,
+  DestinyRaceDefinition,
+  DestinyTalentGridDefinition,
+  DestinyUnlockDefinition,
+  DestinyMaterialRequirementSetDefinition,
+  DestinySandboxPerkDefinition,
+  DestinyStatGroupDefinition,
+  DestinyProgressionMappingDefinition,
+  DestinyFactionDefinition,
+  DestinyVendorGroupDefinition,
+  DestinyRewardSourceDefinition,
+  DestinyUnlockValueDefinition,
+  DestinyItemCategoryDefinition,
+  DestinyDamageTypeDefinition,
+  DestinyActivityModeDefinition,
+  DestinyActivityGraphDefinition,
+  DestinyCollectibleDefinition,
+  DestinyStatDefinition,
+  DestinyItemTierTypeDefinition,
+  DestinyPlugSetDefinition,
+  DestinyPresentationNodeDefinition,
+  DestinyRecordDefinition,
+  DestinyDestinationDefinition,
+  DestinyEquipmentSlotDefinition,
+  DestinyInventoryItemDefinition,
+  DestinyLocationDefinition,
+  DestinyLoreDefinition,
+  DestinyObjectiveDefinition,
+  DestinyProgressionDefinition,
+  DestinyProgressionLevelRequirementDefinition,
+  DestinySeasonDefinition,
+  DestinySeasonPassDefinition,
+  DestinySocketCategoryDefinition,
+  DestinySocketTypeDefinition,
+  DestinyVendorDefinition,
+  DestinyMilestoneDefinition,
+  DestinyActivityModifierDefinition,
+  DestinyReportReasonCategoryDefinition,
+  DestinyArtifactDefinition,
+  DestinyBreakerTypeDefinition,
+  DestinyChecklistDefinition,
+  DestinyEnergyTypeDefinition,
+} from 'bungie-api-ts/destiny2';
+
+// declare module 'destiny2-manifest'{
+// class D2Manifest {
+//   constructor(apiToken: string, language: string, verbose: boolean, manifestsPath: string);
+//   apiToken: string;
+//   language: string;
+//   verbose: boolean;
+//   manifestsPath: string;
+//   manifest: DestinyJSONManifest;
+// }
+// export default D2Manifest;
+// }
+export interface DestinyJSONManifest {
+  DestinyPlaceDefinition: { [key: number]: DestinyPlaceDefinition };
+  DestinyActivityDefinition: { [key: number]: DestinyActivityDefinition };
+  DestinyActivityTypeDefinition: { [key: number]: DestinyActivityTypeDefinition };
+  DestinyClassDefinition: { [key: number]: DestinyClassDefinition };
+  DestinyGenderDefinition: { [key: number]: DestinyGenderDefinition };
+  DestinyInventoryBucketDefinition: { [key: number]: DestinyInventoryBucketDefinition };
+  DestinyRaceDefinition: { [key: number]: DestinyRaceDefinition };
+  DestinyTalentGridDefinition: { [key: number]: DestinyTalentGridDefinition };
+  DestinyUnlockDefinition: { [key: number]: DestinyUnlockDefinition };
+  DestinyMaterialRequirementSetDefinition: {
+    [key: number]: DestinyMaterialRequirementSetDefinition;
+  };
+  DestinySandboxPerkDefinition: { [key: number]: DestinySandboxPerkDefinition };
+  DestinyStatGroupDefinition: { [key: number]: DestinyStatGroupDefinition };
+  DestinyProgressionMappingDefinition: { [key: number]: DestinyProgressionMappingDefinition };
+  DestinyFactionDefinition: { [key: number]: DestinyFactionDefinition };
+  DestinyVendorGroupDefinition: { [key: number]: DestinyVendorGroupDefinition };
+  DestinyRewardSourceDefinition: { [key: number]: DestinyRewardSourceDefinition };
+  DestinyUnlockValueDefinition: { [key: number]: DestinyUnlockValueDefinition };
+  DestinyItemCategoryDefinition: { [key: number]: DestinyItemCategoryDefinition };
+  DestinyDamageTypeDefinition: { [key: number]: DestinyDamageTypeDefinition };
+  DestinyActivityModeDefinition: { [key: number]: DestinyActivityModeDefinition };
+  DestinyActivityGraphDefinition: { [key: number]: DestinyActivityGraphDefinition };
+  DestinyCollectibleDefinition: { [key: number]: DestinyCollectibleDefinition };
+  DestinyStatDefinition: { [key: number]: DestinyStatDefinition };
+  DestinyItemTierTypeDefinition: { [key: number]: DestinyItemTierTypeDefinition };
+  DestinyPlugSetDefinition: { [key: number]: DestinyPlugSetDefinition };
+  DestinyPresentationNodeDefinition: { [key: number]: DestinyPresentationNodeDefinition };
+  DestinyRecordDefinition: { [key: number]: DestinyRecordDefinition };
+  DestinyDestinationDefinition: { [key: number]: DestinyDestinationDefinition };
+  DestinyEquipmentSlotDefinition: { [key: number]: DestinyEquipmentSlotDefinition };
+  DestinyInventoryItemDefinition: { [key: number]: DestinyInventoryItemDefinition };
+  DestinyLocationDefinition: { [key: number]: DestinyLocationDefinition };
+  DestinyLoreDefinition: { [key: number]: DestinyLoreDefinition };
+  DestinyObjectiveDefinition: { [key: number]: DestinyObjectiveDefinition };
+  DestinyProgressionDefinition: { [key: number]: DestinyProgressionDefinition };
+  DestinyProgressionLevelRequirementDefinition: {
+    [key: number]: DestinyProgressionLevelRequirementDefinition;
+  };
+  DestinySeasonDefinition: { [key: number]: DestinySeasonDefinition };
+  DestinySeasonPassDefinition: { [key: number]: DestinySeasonPassDefinition };
+  DestinySocketCategoryDefinition: { [key: number]: DestinySocketCategoryDefinition };
+  DestinySocketTypeDefinition: { [key: number]: DestinySocketTypeDefinition };
+  DestinyVendorDefinition: { [key: number]: DestinyVendorDefinition };
+  DestinyMilestoneDefinition: { [key: number]: DestinyMilestoneDefinition };
+  DestinyActivityModifierDefinition: { [key: number]: DestinyActivityModifierDefinition };
+  DestinyReportReasonCategoryDefinition: { [key: number]: DestinyReportReasonCategoryDefinition };
+  DestinyArtifactDefinition: { [key: number]: DestinyArtifactDefinition };
+  DestinyBreakerTypeDefinition: { [key: number]: DestinyBreakerTypeDefinition };
+  DestinyChecklistDefinition: { [key: number]: DestinyChecklistDefinition };
+  DestinyEnergyTypeDefinition: { [key: number]: DestinyEnergyTypeDefinition };
+}
+
+type valueof<T> = T[keyof T];
+export type DestinyManifestTableName = keyof DestinyJSONManifest;
+
+export type DestinyManifestTable = valueof<DestinyJSONManifest>;
+//                    ↑
+//         this seems to work right. it's an | of every possible table
+export type DestinyDefinitionFrom<K extends DestinyManifestTableName> = DestinyJSONManifest[K][number];
+
+// export type DestinyAnyDefinition = DestinyManifestTable[number]
+//                    ↑
+//         why does this resolve to DestinyUnlockValueDefinition ???????
+//        same with this. it only picks one table??
+//                    ↓
+// export type DestinyAnyDefinition2 = valueof<DestinyManifestTable>
+
+// export type DestinyAnyDefinition3 = valueof<valueof<DestinyJSONManifest>>
+
+//  var thing:DestinyDefinitionFrom<'DestinyInventoryItemDefinition'>
+//                    ↑
+//         DestinyInventoryItemDefinition cool this works
+
+
+
+
+*/
