@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "tsc && tsc test/test.ts && node test/test.js",
-    "build": "tsc",
+    "build": "rm -f ./lib/* && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint src --ext .js,.ts,.tsx",
     "prepare": "npm run build",
