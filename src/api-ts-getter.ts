@@ -224,8 +224,6 @@ export type DestinyManifestTableName = keyof DestinyManifestStructure;
  */
 export type DestinyDefinitionFrom<K extends DestinyManifestTableName> = DestinyManifestStructure[K][number];
 
-
-
 export interface GetAllManifestTablesParams {
   destinyManifest: DestinyManifest;
   language: string;
@@ -237,19 +235,19 @@ export interface GetManifestTableParams<T extends DestinyManifestTableName> {
   language: string;
 }
 
-
 /** fetches the enormous combined JSON manifest file */
 export function getAllDestinyManifestTables(http: HttpClient, params: GetAllManifestTablesParams) {
   return http({
     method: 'GET',
-    url: `https://www.bungie.net${
-      params.destinyManifest.jsonWorldContentPaths[params.language]
-    }`,
+    url: `https://www.bungie.net${params.destinyManifest.jsonWorldContentPaths[params.language]}`,
   });
 }
 
 /** fetches and returns a single table (Component) from the d2 manifest */
-export function getDestinyManifestTable<T extends DestinyManifestTableName>(http: HttpClient, params: GetManifestTableParams<T>) {
+export function getDestinyManifestTable<T extends DestinyManifestTableName>(
+  http: HttpClient,
+  params: GetManifestTableParams<T>,
+) {
   return http({
     method: 'GET',
     url: `https://www.bungie.net${

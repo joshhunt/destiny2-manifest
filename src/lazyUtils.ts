@@ -1,4 +1,3 @@
-
 export function displayName(entry: any) {
   return entry?.displayProperties?.name ?? '';
 }
