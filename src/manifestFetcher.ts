@@ -58,13 +58,16 @@ export async function getTable(
 
 export async function getAllTables(language: string, ignoreIfVersion: string = '', verbose = false) {
   const manifestMetadata = await manifestMetadataPromise;
-  const versionMismatch = ignoreIfVersion !== manifestMetadata.version;
+  const alreadyUpdated = ignoreIfVersion === manifestMetadata.version;
 
-  if (verbose)
-    console.log(
-      `${
-        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version !== ${ignoreIfVersion} ` : ''
-      }downloading version ${manifestMetadata.version}`,
-    );
-  return versionMismatch && getAllDestinyManifestTables(httpClient, { destinyManifest: manifestMetadata, language });
+  if (verbose) {
+    console.log(`bungie.net has manifest version ${manifestMetadata.version}`);
+    console.log(`we have version ${ignoreIfVersion}`);
+    ignoreIfVersion && alreadyUpdated && console.log(`these match and we will skip download`);
+    !ignoreIfVersion && console.log(`no instructions given to avoid performing a download`);
+    ignoreIfVersion && !alreadyUpdated && console.log(`time to upgrade`);
+    (!ignoreIfVersion || (ignoreIfVersion && !alreadyUpdated)) &&
+      console.log(`about to download ${manifestMetadata.version}`);
+  }
+  return !alreadyUpdated && getAllDestinyManifestTables(httpClient, { destinyManifest: manifestMetadata, language });
 }

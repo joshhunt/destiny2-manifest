@@ -66,7 +66,7 @@ export default class D2Manifest {
       }
       return 0;
     });
-    return manifestsByVersion[0];
+    return manifestsByVersion[0] ?? '';
   }
 
   /**
