@@ -77,7 +77,9 @@ export default class D2Manifest {
   async update() {
     if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath, { recursive: true });
     try {
-      const latestManifest = this.latest();
+      // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
+      // so we can compare version number to the API's
+      const latestManifest = this.latest().replace('.json', '');
 
       this.verbose && console.log(`latest saved version: ${latestManifest}`);
       const manifest = await getAllTables(this.language, latestManifest, true);
