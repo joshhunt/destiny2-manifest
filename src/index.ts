@@ -60,7 +60,8 @@ export default class D2Manifest {
       const a_ = a.split(/[-.]/);
       const b_ = b.split(/[-.]/);
       for (var i = 0; i < a_.length; i++) {
-        let comparison = Number(a_[i]) - Number(b_[i]);
+        // sort highest to front
+        let comparison = Number(b_[i]) - Number(a_[i]);
         if (comparison) return comparison;
       }
       return 0;
@@ -78,10 +79,20 @@ export default class D2Manifest {
     try {
       const latestManifest = this.latest();
 
+      this.verbose && console.log(`latest saved version: ${latestManifest}`);
       const manifest = await getAllTables(this.language, latestManifest, true);
+      if (!manifest) {
+        console.log(`didn't get the manifest\n${manifest === false ? `version matched ${latestManifest}` : ''}`);
+        return;
+      }
       const manifestMetadata = await manifestMetadataPromise;
-      if (!manifest) return;
       // this is a criminally poor use of resources when i could just stream the download to a file. but... bleh.
+      this.verbose &&
+        console.log(
+          `writing manifest with ${Object.keys(manifest).length} keys\nto file: ${this.manifestsPath +
+            manifestMetadata.version +
+            '.json'}`,
+        );
       fs.writeFileSync(this.manifestsPath + manifestMetadata.version + '.json', JSON.stringify(manifest));
       this.verbose && console.log('manifest updated. loading update.');
       this.manifest = manifest;

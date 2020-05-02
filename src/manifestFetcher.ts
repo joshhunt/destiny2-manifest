@@ -9,7 +9,13 @@ import { getDestinyManifest } from 'bungie-api-ts/destiny2';
  * contacts the API and interprets results as JSON
  */
 export function httpClient(config: HttpClientConfig) {
-  return fetch(config.url, config).then((res) => res.json());
+  return fetch(config.url, config)
+    .then((res) => res.json())
+    .catch((e) => {
+      console.log('DESTINY API ERROR');
+      console.log('probably about to fail a promise here. sorry.');
+      console.log(console.log(e));
+    });
 }
 
 /**
@@ -27,11 +33,7 @@ export const manifestMetadataPromise = (async () => {
  */
 export async function manifestMetadataFetch() {
   const manifestMetadata = await getDestinyManifest(httpClient);
-  try {
-    return manifestMetadata.Response;
-  } catch (e) {
-    console.log(e);
-  }
+  return manifestMetadata.Response;
 }
 
 export async function getTable(
@@ -46,11 +48,12 @@ export async function getTable(
   if (verbose)
     console.log(
       `${
-        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version that isn't ${ignoreIfVersion} ` : ''
+        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version !== ${ignoreIfVersion} ` : ''
       }downloading version ${manifestMetadata.version}`,
     );
-  if (versionMismatch)
-    return getDestinyManifestTable(httpClient, { destinyManifest: manifestMetadata, tableName, language });
+  return (
+    versionMismatch && getDestinyManifestTable(httpClient, { destinyManifest: manifestMetadata, tableName, language })
+  );
 }
 
 export async function getAllTables(language: string, ignoreIfVersion: string = '', verbose = false) {
@@ -60,8 +63,8 @@ export async function getAllTables(language: string, ignoreIfVersion: string = '
   if (verbose)
     console.log(
       `${
-        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version that isn't ${ignoreIfVersion} ` : ''
+        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version !== ${ignoreIfVersion} ` : ''
       }downloading version ${manifestMetadata.version}`,
     );
-  if (versionMismatch) return getAllDestinyManifestTables(httpClient, { destinyManifest: manifestMetadata, language });
+  return versionMismatch && getAllDestinyManifestTables(httpClient, { destinyManifest: manifestMetadata, language });
 }

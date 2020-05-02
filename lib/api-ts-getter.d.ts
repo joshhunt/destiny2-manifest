@@ -176,6 +176,6 @@ export interface GetManifestTableParams<T extends DestinyManifestTableName> {
     language: string;
 }
 /** fetches the enormous combined JSON manifest file */
-export declare function getAllDestinyManifestTables(http: HttpClient, params: GetAllManifestTablesParams): Promise<any>;
+export declare function getAllDestinyManifestTables(http: HttpClient, params: GetAllManifestTablesParams): Promise<DestinyManifestStructure>;
 /** fetches and returns a single table (Component) from the d2 manifest */
-export declare function getDestinyManifestTable<T extends DestinyManifestTableName>(http: HttpClient, params: GetManifestTableParams<T>): Promise<any>;
+export declare function getDestinyManifestTable<T extends DestinyManifestTableName>(http: HttpClient, params: GetManifestTableParams<T>): Promise<DestinyManifestStructure[T]>;

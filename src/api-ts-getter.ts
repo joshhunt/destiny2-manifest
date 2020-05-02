@@ -236,7 +236,10 @@ export interface GetManifestTableParams<T extends DestinyManifestTableName> {
 }
 
 /** fetches the enormous combined JSON manifest file */
-export function getAllDestinyManifestTables(http: HttpClient, params: GetAllManifestTablesParams) {
+export function getAllDestinyManifestTables(
+  http: HttpClient,
+  params: GetAllManifestTablesParams,
+): Promise<DestinyManifestStructure> {
   return http({
     method: 'GET',
     url: `https://www.bungie.net${params.destinyManifest.jsonWorldContentPaths[params.language]}`,
@@ -247,7 +250,7 @@ export function getAllDestinyManifestTables(http: HttpClient, params: GetAllMani
 export function getDestinyManifestTable<T extends DestinyManifestTableName>(
   http: HttpClient,
   params: GetManifestTableParams<T>,
-) {
+): Promise<DestinyManifestStructure[T]> {
   return http({
     method: 'GET',
     url: `https://www.bungie.net${
