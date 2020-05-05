@@ -1,4 +1,4 @@
-import { DestinyDefinitionFrom, DestinyManifestStructure, DestinyManifestTableName } from './api-ts-getter';
+import { AllDestinyManifestComponents, DestinyDefinitionFrom, DestinyManifestComponentName } from 'bungie-api-ts/destiny2/manifest';
 /**
  * FEED ME A STRAY API TOKEN
  */
@@ -7,7 +7,7 @@ export default class D2Manifest {
     language: string;
     verbose: boolean;
     manifestsPath: string;
-    manifest: DestinyManifestStructure | undefined;
+    manifest: AllDestinyManifestComponents | undefined;
     /**
      * @param apiToken api token for bungie.net
      * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
@@ -33,9 +33,9 @@ export default class D2Manifest {
      * prefers matching search term to the entire word.
      * prefers major item categories, trying to avoid weird same-named stuff like catalysts.
      */
-    find<K extends DestinyManifestTableName>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean): DestinyManifestStructure[K][number][];
+    find<K extends DestinyManifestComponentName>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean): AllDestinyManifestComponents[K][number][];
     /** performs a lookup of a known hash */
-    get<K extends DestinyManifestTableName>(tableName: K, hash: number | undefined): DestinyDefinitionFrom<K> | undefined;
+    get<K extends DestinyManifestComponentName>(tableName: K, hash: number | undefined): DestinyDefinitionFrom<K> | undefined;
     /** returns an array of table contents */
-    getAll<K extends DestinyManifestTableName>(tableName: K, tableFilter?: (entry: any) => boolean): DestinyManifestStructure[K][number][];
+    getAll<K extends DestinyManifestComponentName>(tableName: K, tableFilter?: (entry: any) => boolean): AllDestinyManifestComponents[K][number][];
 }

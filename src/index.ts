@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { DestinyDefinitionFrom, DestinyManifestStructure, DestinyManifestTableName } from './api-ts-getter';
+import { AllDestinyManifestComponents, DestinyDefinitionFrom, DestinyManifestComponentName, getAllDestinyManifestComponents } from 'bungie-api-ts/destiny2/manifest'
 import { displayDescription, displayName, escapeRegExp, progressDescription, statName, tierName } from './lazyUtils';
 import { getAllTables, manifestMetadataPromise } from './manifestFetcher';
 
@@ -16,7 +16,7 @@ export default class D2Manifest {
   language: string;
   verbose: boolean;
   manifestsPath: string;
-  manifest: DestinyManifestStructure | undefined;
+  manifest: AllDestinyManifestComponents | undefined;
   /**
    * @param apiToken api token for bungie.net
    * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
@@ -109,7 +109,7 @@ export default class D2Manifest {
    * prefers matching search term to the entire word.
    * prefers major item categories, trying to avoid weird same-named stuff like catalysts.
    */
-  find<K extends DestinyManifestTableName>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean) {
+  find<K extends DestinyManifestComponentName>(tableName: K, needle: string, tableFilter?: (entry: any) => boolean) {
     let searchResults: DestinyDefinitionFrom<K>[] = [];
     let needles: RegExp[];
     try {
@@ -138,7 +138,7 @@ export default class D2Manifest {
   }
 
   /** performs a lookup of a known hash */
-  get<K extends DestinyManifestTableName>(
+  get<K extends DestinyManifestComponentName>(
     tableName: K,
     hash: number | undefined,
   ): DestinyDefinitionFrom<K> | undefined {
@@ -146,10 +146,10 @@ export default class D2Manifest {
   }
 
   /** returns an array of table contents */
-  getAll<K extends DestinyManifestTableName>(
+  getAll<K extends DestinyManifestComponentName>(
     tableName: K,
     tableFilter?: (entry: any) => boolean,
-  ): DestinyManifestStructure[K][number][] {
+  ): AllDestinyManifestComponents[K][number][] {
     return Object.values(this.manifest?.[tableName] ?? {}).filter(tableFilter ? tableFilter : () => true);
   }
 }

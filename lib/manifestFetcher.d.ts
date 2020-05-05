@@ -1,4 +1,4 @@
-import { DestinyManifestTableName } from './api-ts-getter';
+import { DestinyManifestComponentName } from 'bungie-api-ts/destiny2/manifest';
 import { HttpClientConfig } from 'bungie-api-ts/http';
 /**
  * given set of bungie-api-ts params (HttpClientConfig),
@@ -14,7 +14,7 @@ export declare const manifestMetadataPromise: Promise<import("bungie-api-ts/dest
  * in case you're into weird stuff like re-querying the API for updated manifest info
  */
 export declare function manifestMetadataFetch(): Promise<import("bungie-api-ts/destiny2").DestinyManifest>;
-export declare function getTable(language: string, tableName: DestinyManifestTableName, ignoreIfVersion?: string, verbose?: boolean): Promise<false | {
+export declare function getTable(language: string, tableName: DestinyManifestComponentName, ignoreIfVersion?: string, verbose?: boolean): Promise<false | {
     [key: number]: import("bungie-api-ts/destiny2").DestinyPlaceDefinition;
 } | {
     [key: number]: import("bungie-api-ts/destiny2").DestinyActivityDefinition;
@@ -115,4 +115,5 @@ export declare function getTable(language: string, tableName: DestinyManifestTab
 } | {
     [key: number]: import("bungie-api-ts/destiny2").DestinyEnergyTypeDefinition;
 }>;
-export declare function getAllTables(language: string, ignoreIfVersion?: string, verbose?: boolean): Promise<false | import("./api-ts-getter").DestinyManifestStructure>;
+export declare function getAllTables(language: string, ignoreIfVersion?: string, verbose?: boolean): Promise<false | import("bungie-api-ts/destiny2/manifest").AllDestinyManifestComponents>;
+export declare function getSomeTables<T extends DestinyManifestComponentName[]>(language: string, tableNames: T, ignoreIfVersion?: string, verbose?: boolean): Promise<Pick<import("bungie-api-ts/destiny2/manifest").AllDestinyManifestComponents, T[number]> | null>;

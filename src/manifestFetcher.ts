@@ -1,4 +1,11 @@
-import { DestinyManifestTableName, getAllDestinyManifestTables, getDestinyManifestTable } from './api-ts-getter';
+// import {
+//   DestinyManifestComponentName,
+//   getAllDestinyManifestComponents,
+//   getDestinyManifestComponent,
+//   getDestinyManifestSlice,
+// } from './api-ts-getter';
+
+import { DestinyManifestComponentName, getAllDestinyManifestComponents, getDestinyManifestComponent, getDestinyManifestSlice } from 'bungie-api-ts/destiny2/manifest';
 
 import { HttpClientConfig } from 'bungie-api-ts/http';
 import fetch from 'cross-fetch';
@@ -38,7 +45,7 @@ export async function manifestMetadataFetch() {
 
 export async function getTable(
   language: string,
-  tableName: DestinyManifestTableName,
+  tableName: DestinyManifestComponentName,
   ignoreIfVersion: string = '',
   verbose = false,
 ) {
@@ -52,7 +59,7 @@ export async function getTable(
       }downloading version ${manifestMetadata.version}`,
     );
   return (
-    versionMismatch && getDestinyManifestTable(httpClient, { destinyManifest: manifestMetadata, tableName, language })
+    versionMismatch && getDestinyManifestComponent(httpClient, { destinyManifest: manifestMetadata, tableName, language })
   );
 }
 
@@ -69,5 +76,79 @@ export async function getAllTables(language: string, ignoreIfVersion: string = '
     (!ignoreIfVersion || (ignoreIfVersion && !alreadyUpdated)) &&
       console.log(`about to download ${manifestMetadata.version}`);
   }
-  return !alreadyUpdated && getAllDestinyManifestTables(httpClient, { destinyManifest: manifestMetadata, language });
+  return !alreadyUpdated && getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language });
 }
+
+export async function getSomeTables<T extends DestinyManifestComponentName[]>(
+  language: string,
+  tableNames: T,
+  ignoreIfVersion: string = '',
+  verbose = false,
+) {
+  //: Promise<Pick<AllDestinyManifestComponents, T[number]> | false>
+  const manifestMetadata = await manifestMetadataPromise;
+  const versionMismatch = ignoreIfVersion !== manifestMetadata.version || null;
+
+  if (verbose)
+    console.log(
+      `${
+        ignoreIfVersion && versionMismatch ? `bungie.net has a manifest version !== ${ignoreIfVersion} ` : ''
+      }downloading version ${manifestMetadata.version}`,
+    );
+  return (
+    versionMismatch &&
+    getDestinyManifestSlice(httpClient, { destinyManifest: manifestMetadata, tableNames, language })
+  );
+}
+
+// async () => {
+//   const tablesGot = await getSomeTables('en', ['DestinyMilestoneDefinition', 'DestinyActivityModifierDefinition']);
+//   tablesGot && tablesGot.DestinyMilestoneDefinition && tablesGot.DestinyActivityDefinition;
+// };
+
+// const tablesToKeep = ['DestinyMilestoneDefinition' as const, 'DestinyActivityModifierDefinition' as const];
+
+// function getTables<T extends (DestinyManifestComponentName)[]>(
+//   tables: T,
+// ): Promise<Pick<AllDestinyManifestComponents, T[number]>> {
+//   return {} as any;
+// }
+// async () => {
+//   const thing = await getTables(tablesToKeep);
+//   thing.DestinyActivityModifierDefinition;
+//   thing.DestinyObjectiveDefinition;
+// };
+
+//DestinyManifestComponentName = keyof AllDestinyManifestComponents;
+
+// export type asdf = Pick<AllDestinyManifestComponents, typeof tablesToKeep[number]>;
+// export interface GetSomeManifestTablesParams<T extends TableKeySet> {
+//   destinyManifest: DestinyManifest;
+//   tableNames: T;
+//   language: string;
+// }
+// export async function getSomeDestinyManifestTables<T extends TableKeySet>(
+//   http: HttpClient,
+//   params: GetSomeManifestTablesParams<T>,
+// )
+
+// async () => {
+//   const manifestMetadata = await manifestMetadataPromise;
+//   const partialManifest = await getDestinyManifestSlice(httpClient, {
+//     destinyManifest: manifestMetadata,
+//     tableNames: ['DestinyInventoryItemDefinition', 'DestinyLocationDefinition'],
+//     language: 'en',
+//   });
+
+//   partialManifest.DestinyInventoryItemDefinition;
+//   partialManifest.DestinyLocationDefinition;
+//   partialManifest.DestinyObjectiveDefinition;
+
+//   const entry = partialManifest.DestinyInventoryItemDefinition[1127237110];
+
+//   entry.displayProperties;
+//   entry.displayPxxxxxties;
+//   // Property 'displayPxxxxxties' does not exist on type 'DestinyInventoryItemDefinition'.ts(2339)
+
+
+// };
