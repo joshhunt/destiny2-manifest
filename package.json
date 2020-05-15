@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "tsc && tsc test/test.ts && node test/test.js",
-    "build": "rm -f ./lib/* && tsc",
+    "build": "rm -rf ./lib/* && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint src --ext .js,.ts,.tsx",
     "prepare": "npm run build",
@@ -29,16 +29,20 @@
   },
   "homepage": "https://github.com/sundevour/destiny2-manifest#readme",
   "devDependencies": {
-    "@types/node": "^13.7.1",
-    "@typescript-eslint/eslint-plugin": "^2.19.2",
-    "@typescript-eslint/parser": "^2.19.2",
+    "@types/node": "^13.13.5",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
     "eslint": "^6.8.0",
     "prettier": "^1.19.1",
     "prettier-eslint": "^9.0.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.8.3"
   },
   "dependencies": {
-    "bungie-api-ts": "^2.5.0",
-    "cross-fetch": "^3.0.4"
+    "@sundevour/utils": "^1.1.4",
+    "bungie-api-ts": "^3.0.0",
+    "cross-fetch": "^3.0.4",
+    "destiny2-utils": "^1.0.8",
+    "idb-keyval": "^3.2.0",
+    "level": "^6.0.1"
   }
 }

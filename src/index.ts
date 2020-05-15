@@ -1,10 +1,10 @@
-import * as fs from 'fs';
-
-import { AllDestinyManifestComponents, DestinyDefinitionFrom, DestinyManifestComponentName, getAllDestinyManifestComponents } from 'bungie-api-ts/destiny2/manifest'
+import {
+  AllDestinyManifestComponents,
+  DestinyDefinitionFrom,
+  DestinyManifestComponentName,
+} from 'bungie-api-ts/destiny2/manifest';
 import { displayDescription, displayName, escapeRegExp, progressDescription, statName, tierName } from './lazyUtils';
-import { getAllTables, manifestMetadataPromise } from './manifestFetcher';
-
-import { sep } from 'path';
+import { getAllTables, manifestMetadataFetcher } from './manifestFetcher';
 
 const preferredCategories = [1, 20, 18, 19, 16, 34, 35, 39, 42, 43, 44, 53, 1784235469, 2088636411];
 
@@ -15,58 +15,28 @@ export default class D2Manifest {
   apiToken: string;
   language: string;
   verbose: boolean;
-  manifestsPath: string;
   manifest: AllDestinyManifestComponents | undefined;
   /**
    * @param apiToken api token for bungie.net
    * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
    * @param verbose console log steps during async methods
-   * @param manifestsPath where to store/load manifests (default "./manifest")
    */
-  constructor(
-    apiToken: string,
-    language: string = 'en',
-    verbose: boolean = false,
-    manifestsPath: string = `.${sep}manifest${sep}`,
-  ) {
+  constructor(apiToken: string, language: string = 'en', verbose: boolean = false) {
     this.apiToken = apiToken;
     this.language = language;
     this.verbose = verbose;
-    this.manifestsPath = manifestsPath;
+    manifestMetadataFetcher.dispatch(this.apiToken);
   }
-
-  /**
-   * loads the ALREADY saved manifest file
-   * update()s one from the internet if none is found
-   */
+  /** stubbed here. no persistent manifest so this just pulls a new one from d2 API */
   async load() {
-    if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
-    const latestManifest = this.latest();
-    if (latestManifest) {
-      this.verbose && console.log(`loading latest saved manifest: ${latestManifest}`);
-      try {
-        this.manifest = JSON.parse(fs.readFileSync(this.manifestsPath + latestManifest, 'utf8'));
-        this.verbose && console.log('manifest loaded');
-      } catch (e) {
-        console.log(e);
-      }
-    } else {
-      this.verbose && console.log('no latest manifest found. updating to get one.');
-      await this.update();
-    }
+    return this.update();
   }
-  latest() {
-    const manifestsByVersion = fs.readdirSync(this.manifestsPath).sort((a, b) => {
-      const a_ = a.split(/[-.]/);
-      const b_ = b.split(/[-.]/);
-      for (var i = 0; i < a_.length; i++) {
-        // sort highest to front
-        let comparison = Number(b_[i]) - Number(a_[i]);
-        if (comparison) return comparison;
-      }
-      return 0;
-    });
-    return manifestsByVersion[0] ?? '';
+  /** stubbed here. no persistent manifest. */
+  async save(version: string) {
+    return true;
+  }
+  async latest() {
+    return '';
   }
 
   /**
@@ -74,12 +44,12 @@ export default class D2Manifest {
    * downloads a copy if there's a newer version than saved
    * loads up the newest manifest afterward
    */
-  async update() {
-    if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath, { recursive: true });
+  async update(force = false) {
     try {
-      // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
+      // ensure we know the API's version
+      const manifestMetadata = await manifestMetadataFetcher.promise;
       // so we can compare version number to the API's
-      const latestManifest = this.latest().replace('.json', '');
+      const latestManifest = force ? '!FORCE UPDATE!' : await this.latest();
 
       this.verbose && console.log(`latest saved version: ${latestManifest}`);
       const manifest = await getAllTables(this.language, latestManifest, true);
@@ -87,17 +57,10 @@ export default class D2Manifest {
         console.log(`didn't get the manifest\n${manifest === false ? `version matched ${latestManifest}` : ''}`);
         return;
       }
-      const manifestMetadata = await manifestMetadataPromise;
-      // this is a criminally poor use of resources when i could just stream the download to a file. but... bleh.
-      this.verbose &&
-        console.log(
-          `writing manifest with ${Object.keys(manifest).length} keys\nto file: ${this.manifestsPath +
-            manifestMetadata.version +
-            '.json'}`,
-        );
-      fs.writeFileSync(this.manifestsPath + manifestMetadata.version + '.json', JSON.stringify(manifest));
-      this.verbose && console.log('manifest updated. loading update.');
+      this.verbose && console.log('manifest downloaded. loading update.');
       this.manifest = manifest;
+
+      this.save(manifestMetadata.version);
     } catch (e) {
       console.log(e);
     }

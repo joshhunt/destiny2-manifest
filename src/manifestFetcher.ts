@@ -1,39 +1,34 @@
-// import {
-//   DestinyManifestComponentName,
-//   getAllDestinyManifestComponents,
-//   getDestinyManifestComponent,
-//   getDestinyManifestSlice,
-// } from './api-ts-getter';
+import { DestinyManifest, getDestinyManifest } from 'bungie-api-ts/destiny2';
+import {
+  DestinyManifestComponentName,
+  getAllDestinyManifestComponents,
+  getDestinyManifestComponent,
+  getDestinyManifestSlice,
+} from 'bungie-api-ts/destiny2/manifest';
 
-import { DestinyManifestComponentName, getAllDestinyManifestComponents, getDestinyManifestComponent, getDestinyManifestSlice } from 'bungie-api-ts/destiny2/manifest';
-
-import { HttpClientConfig } from 'bungie-api-ts/http';
+import { HttpClient } from 'bungie-api-ts/http';
 import fetch from 'cross-fetch';
-import { getDestinyManifest } from 'bungie-api-ts/destiny2';
+import { generateHttpClient } from 'destiny2-utils/api';
+import { neverResolve } from '@sundevour/utils';
+
+export const httpClient: HttpClient = generateHttpClient(fetch);
 
 /**
- * given set of bungie-api-ts params (HttpClientConfig),
- * contacts the API and interprets results as JSON
+ * small object with a promise to get API manifest version & paths,
+ * and a dispatcher that adds the token in and initiates the request.
+ * lives in its own object so we can refer to its results repeatedly,
+ * without re-dispatching the request to the api.
  */
-export function httpClient(config: HttpClientConfig) {
-  return fetch(config.url, config)
-    .then((res) => res.json())
-    .catch((e) => {
-      console.log('DESTINY API ERROR');
-      console.log('probably about to fail a promise here. sorry.');
-      console.log(console.log(e));
-    });
-}
-
-/**
- * performs a 1-time fetch on script load, whose results we can
- * repeatedly refer back to if we need, by awaiting it
- */
-export const manifestMetadataPromise = (async () => {
-  const manifestMetadata = await manifestMetadataFetch();
-  if (!manifestMetadata) process.exit(1);
-  return manifestMetadata;
-})();
+export const manifestMetadataFetcher = {
+  promise: neverResolve() as Promise<DestinyManifest>,
+  dispatch: function(token: string) {
+    this.promise = (async () => {
+      const fetchedData = await manifestMetadataFetch();
+      return fetchedData;
+    })();
+    return this.promise;
+  },
+};
 
 /**
  * in case you're into weird stuff like re-querying the API for updated manifest info
@@ -49,7 +44,7 @@ export async function getTable(
   ignoreIfVersion: string = '',
   verbose = false,
 ) {
-  const manifestMetadata = await manifestMetadataPromise;
+  const manifestMetadata = await manifestMetadataFetcher.promise;
   const versionMismatch = ignoreIfVersion !== manifestMetadata.version;
 
   if (verbose)
@@ -59,24 +54,27 @@ export async function getTable(
       }downloading version ${manifestMetadata.version}`,
     );
   return (
-    versionMismatch && getDestinyManifestComponent(httpClient, { destinyManifest: manifestMetadata, tableName, language })
+    versionMismatch &&
+    getDestinyManifestComponent(httpClient, { destinyManifest: manifestMetadata, tableName, language })
   );
 }
 
 export async function getAllTables(language: string, ignoreIfVersion: string = '', verbose = false) {
-  const manifestMetadata = await manifestMetadataPromise;
+  const manifestMetadata = await manifestMetadataFetcher.promise;
   const alreadyUpdated = ignoreIfVersion === manifestMetadata.version;
 
   if (verbose) {
-    console.log(`bungie.net has manifest version ${manifestMetadata.version}`);
-    console.log(`we have version ${ignoreIfVersion}`);
+    console.log(`bungie.net has manifest version "${manifestMetadata.version}"`);
+    console.log(`we have version "${ignoreIfVersion}"`);
     ignoreIfVersion && alreadyUpdated && console.log(`these match and we will skip download`);
     !ignoreIfVersion && console.log(`no instructions given to avoid performing a download`);
     ignoreIfVersion && !alreadyUpdated && console.log(`time to upgrade`);
     (!ignoreIfVersion || (ignoreIfVersion && !alreadyUpdated)) &&
       console.log(`about to download ${manifestMetadata.version}`);
   }
-  return !alreadyUpdated && getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language });
+  return (
+    !alreadyUpdated && getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language })
+  );
 }
 
 export async function getSomeTables<T extends DestinyManifestComponentName[]>(
@@ -86,7 +84,7 @@ export async function getSomeTables<T extends DestinyManifestComponentName[]>(
   verbose = false,
 ) {
   //: Promise<Pick<AllDestinyManifestComponents, T[number]> | false>
-  const manifestMetadata = await manifestMetadataPromise;
+  const manifestMetadata = await manifestMetadataFetcher.promise;
   const versionMismatch = ignoreIfVersion !== manifestMetadata.version || null;
 
   if (verbose)
@@ -96,8 +94,7 @@ export async function getSomeTables<T extends DestinyManifestComponentName[]>(
       }downloading version ${manifestMetadata.version}`,
     );
   return (
-    versionMismatch &&
-    getDestinyManifestSlice(httpClient, { destinyManifest: manifestMetadata, tableNames, language })
+    versionMismatch && getDestinyManifestSlice(httpClient, { destinyManifest: manifestMetadata, tableNames, language })
   );
 }
 
@@ -149,6 +146,5 @@ export async function getSomeTables<T extends DestinyManifestComponentName[]>(
 //   entry.displayProperties;
 //   entry.displayPxxxxxties;
 //   // Property 'displayPxxxxxties' does not exist on type 'DestinyInventoryItemDefinition'.ts(2339)
-
 
 // };

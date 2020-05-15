@@ -1,19 +1,21 @@
+import { DestinyManifest } from 'bungie-api-ts/destiny2';
 import { DestinyManifestComponentName } from 'bungie-api-ts/destiny2/manifest';
-import { HttpClientConfig } from 'bungie-api-ts/http';
+import { HttpClient } from 'bungie-api-ts/http';
+export declare const httpClient: HttpClient;
 /**
- * given set of bungie-api-ts params (HttpClientConfig),
- * contacts the API and interprets results as JSON
+ * small object with a promise to get API manifest version & paths,
+ * and a dispatcher that adds the token in and initiates the request.
+ * lives in its own object so we can refer to its results repeatedly,
+ * without re-dispatching the request to the api.
  */
-export declare function httpClient(config: HttpClientConfig): Promise<any>;
-/**
- * performs a 1-time fetch on script load, whose results we can
- * repeatedly refer back to if we need, by awaiting it
- */
-export declare const manifestMetadataPromise: Promise<import("bungie-api-ts/destiny2").DestinyManifest>;
+export declare const manifestMetadataFetcher: {
+    promise: Promise<DestinyManifest>;
+    dispatch: (token: string) => Promise<DestinyManifest>;
+};
 /**
  * in case you're into weird stuff like re-querying the API for updated manifest info
  */
-export declare function manifestMetadataFetch(): Promise<import("bungie-api-ts/destiny2").DestinyManifest>;
+export declare function manifestMetadataFetch(): Promise<DestinyManifest>;
 export declare function getTable(language: string, tableName: DestinyManifestComponentName, ignoreIfVersion?: string, verbose?: boolean): Promise<false | {
     [key: number]: import("bungie-api-ts/destiny2").DestinyPlaceDefinition;
 } | {

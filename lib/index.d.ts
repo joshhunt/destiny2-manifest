@@ -6,27 +6,24 @@ export default class D2Manifest {
     apiToken: string;
     language: string;
     verbose: boolean;
-    manifestsPath: string;
     manifest: AllDestinyManifestComponents | undefined;
     /**
      * @param apiToken api token for bungie.net
      * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
      * @param verbose console log steps during async methods
-     * @param manifestsPath where to store/load manifests (default "./manifest")
      */
-    constructor(apiToken: string, language?: string, verbose?: boolean, manifestsPath?: string);
-    /**
-     * loads the ALREADY saved manifest file
-     * update()s one from the internet if none is found
-     */
+    constructor(apiToken: string, language?: string, verbose?: boolean);
+    /** stubbed here. no persistent manifest so this just pulls a new one from d2 API */
     load(): Promise<void>;
-    latest(): string;
+    /** stubbed here. no persistent manifest. */
+    save(version: string): Promise<boolean>;
+    latest(): Promise<string>;
     /**
      * checks bungie.net for the current manifest version
      * downloads a copy if there's a newer version than saved
      * loads up the newest manifest afterward
      */
-    update(): Promise<void>;
+    update(force?: boolean): Promise<void>;
     /**
      * searches an entire manifest table, doing case-insenstive string matching.
      * checks against name, description, progressDescription, statName, tierName.

@@ -1,4 +1,4 @@
-import D2Manifest from '../lib';
+import D2Manifest from '../lib/node';
 const manifest = new D2Manifest('asdf', 'en', true);
 // console.log(manifest);
 (async () => {
