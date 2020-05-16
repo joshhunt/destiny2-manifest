@@ -9,7 +9,7 @@ export declare const getLatestCachedVersion: () => Promise<string>;
  *
  * returns true if it managed to load a local version of the manifest
  */
-export declare const loadOnly: () => Promise<boolean>;
+export declare const loadOnly: (fromLoad?: boolean) => Promise<boolean>;
 /**
  * loads the newest manifest according to what version the API advertises
  *
@@ -54,7 +54,7 @@ declare const _default: {
      *
      * returns true if it managed to load a local version of the manifest
      */
-    loadOnly: () => Promise<boolean>;
+    loadOnly: (fromLoad?: boolean) => Promise<boolean>;
     /**
      * loads the newest manifest according to what version the API advertises
      *
