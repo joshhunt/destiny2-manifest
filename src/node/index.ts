@@ -1,76 +1,161 @@
 import * as fs from 'fs';
 
-import D2Manifest from '..';
-import { compareVersionNumbers } from 'destiny2-utils/manifest';
+import {
+  allManifest,
+  fetchManifestMetadata,
+  find,
+  get,
+  getAll,
+  isVerbose,
+  loadManifestFromApi,
+  loadedVersion,
+  setApiKey,
+  setManifest,
+  setStoredVersion,
+  verbose,
+} from '../index.js';
+
+import { compareVersionNumbers } from 'destiny2-utils';
 import { sep } from 'path';
 
+export * from '../index.js';
+
+let manifestsPath = `.${sep}manifest${sep}`;
+export const setManifestsPath = (path: string) => {
+  manifestsPath = `${path.replace(/[\\\/]$/, '')}${sep}`;
+};
+
+const enforceManifestsDir = () => {
+  if (!fs.existsSync(manifestsPath)) fs.mkdirSync(manifestsPath);
+};
+
+/** check files in the manifestsPath, find the highest numbered one */
+export const getLatestCachedVersion = async () => {
+  enforceManifestsDir();
+  const manifestsByVersion = fs.readdirSync(manifestsPath).sort(compareVersionNumbers);
+  // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
+  return manifestsByVersion[0]?.replace('.json', '') ?? '';
+};
+
 /**
- * D2Manifest but saves manifest jsons to a specified path
+ * loads an ALREADY saved manifest file (the most recent available)
+ *
+ * does not require the internet since you aren't checking the API version
+ *
+ * returns true if it managed to load a local version of the manifest
  */
-export default class D2ManifestNode extends D2Manifest {
-  manifestsPath: string;
-  /**
-   * @param apiToken api token for bungie.net
-   * @param language en (default) / fr / es / es-mx / de / it / ja / pt-br / ru / pl / ko / zh-cht / zh-chs
-   * @param verbose console log steps during async methods
-   * @param manifestsPath where to store/load manifests (default "./manifest")
-   */
-  constructor(
-    apiToken: string,
-    language: string = 'en',
-    verbose: boolean = false,
-    manifestsPath: string = `.${sep}manifest`,
-  ) {
-    super(apiToken, language, verbose);
-    this.manifestsPath = `${manifestsPath.replace(/[\\\/]$/, '')}${sep}`;
-  }
+export const loadOnly = async (fromLoad = false) => {
+  let manifestDidLoad = false;
 
-  // check files in the manifestsPath, find the highest numbered one
-  async latest() {
-    const manifestsByVersion = fs.readdirSync(this.manifestsPath).sort(compareVersionNumbers);
-    // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
-    return manifestsByVersion[0]?.replace('.json', '') ?? '';
-  }
+  const latestCachedVersion = await getLatestCachedVersion();
+  isVerbose &&
+    !fromLoad &&
+    console.log(`version cached: "${latestCachedVersion}"
+version loaded in memory: "${loadedVersion}"`);
+  isVerbose && !latestCachedVersion && console.log('no latest manifest found');
 
-  /**
-   * loads an ALREADY saved manifest file
-   * update()s one from the internet if none is found,
-   * unless suppressUpdate is set
-   */
-  async load(suppressUpdate = false) {
-    if (!fs.existsSync(this.manifestsPath)) fs.mkdirSync(this.manifestsPath);
-    const latestManifest = await this.latest();
-    this.verbose && !latestManifest && console.log('no latest manifest found');
-
-    let manifestLoadedOk = false;
-    if (latestManifest) {
-      this.verbose && console.log(`loading latest saved manifest: ${latestManifest}.json`);
-
-      try {
-        this.manifest = JSON.parse(fs.readFileSync(this.manifestsPath + latestManifest + '.json', 'utf8'));
-        this.verbose && console.log('manifest loaded');
-        manifestLoadedOk = true;
-      } catch (e) {
-        this.verbose && console.log('manifest failed loading. file missing? malformed?');
-        console.log(e);
-      }
-
-      if (!manifestLoadedOk) {
-        if (suppressUpdate) {
-          this.verbose && console.log('updating suppressed by suppressUpdate');
-          return;
-        }
-        this.verbose && console.log('downloading new manifest');
-        await this.update(!!latestManifest);
-      }
-    }
-  }
-
-  /**
-   * saves the loaded manifest to a json file
-   */
-  async save(version: string) {
-    fs.writeFileSync(this.manifestsPath + version + '.json', JSON.stringify(this.manifest));
+  if (latestCachedVersion && loadedVersion === latestCachedVersion) {
+    isVerbose && console.log(`latest saved version is already loaded`);
     return true;
   }
-}
+
+  // let's try loading the saved copy
+  if (latestCachedVersion) {
+    isVerbose && console.log(`loading latest saved manifest: ${latestCachedVersion}.json`);
+    try {
+      setManifest(JSON.parse(fs.readFileSync(manifestsPath + latestCachedVersion + '.json', 'utf8')));
+      isVerbose && console.log(`manifest loaded from file. ${Object.keys(allManifest ?? {}).length} components`);
+      manifestDidLoad = true;
+      setStoredVersion(latestCachedVersion);
+    } catch (e) {
+      isVerbose && console.log('manifest failed loading. file missing? malformed?');
+      console.log(e);
+    }
+  }
+  return manifestDidLoad;
+};
+
+/**
+ * loads the newest manifest according to what version the API advertises
+ *
+ * if the newest version is already cached locally, uses that. otherwise
+ * downloads the manifest file from the internet
+ */
+export const load = async () => {
+  const apiVersion = (await fetchManifestMetadata()).version;
+  const latestCachedVersion = await getLatestCachedVersion();
+  isVerbose &&
+    console.log(`version cached: "${latestCachedVersion}"
+version loaded in memory: "${loadedVersion}"
+version in API: "${apiVersion}"`);
+
+  let latestIsLoaded = false;
+
+  // there's nothing to do. why did you run this?
+  if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) latestIsLoaded = true;
+  // we already have the latest one cached but it's not loaded
+  else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion) {
+    const didLoad = await loadOnly(true);
+    if (didLoad) latestIsLoaded = true;
+  }
+  // if above checks didn't help, let's do a big download
+  if (!latestIsLoaded) {
+    isVerbose && console.log(`loading from cache failed or wasn't attempted. starting download.`);
+    // dispatch a force download
+    await loadManifestFromApi(true);
+    // save the results for next time
+    save();
+  }
+};
+
+/** saves the loaded manifest to a json file */
+export const save = async () => {
+  isVerbose && console.log(`saving manifest to "${manifestsPath + loadedVersion + '.json'}".`);
+  fs.writeFileSync(manifestsPath + loadedVersion + '.json', JSON.stringify(allManifest));
+  return true;
+};
+
+export default {
+  /**
+   * if you like doing things THE RIGHT WAY,
+   * you should add an api key to httpClient
+   */
+  setApiKey,
+  /**
+   * choose a relative or absolute path to a directory to store manifests
+   *
+   * default: `./manifest/`
+   */
+  setManifestsPath,
+  /** run this if you love console logs */
+  verbose,
+  /** performs a lookup of a known hash */
+  get,
+  /** returns an array of table contents */
+  getAll,
+  /**
+   * searches an entire manifest table, doing case-insenstive string matching.
+   *
+   * checks against name, description, progressDescription, statName, tierName.
+   *
+   * prefers matching search term to the entire word.
+   *
+   * prefers major item categories, trying to avoid weird same-named stuff like catalysts.
+   */
+  find,
+  /**
+   * loads an ALREADY saved manifest file (the most recent available)
+   *
+   * does not require the internet since you aren't checking the API version
+   *
+   * returns true if it managed to load a local version of the manifest
+   */
+  loadOnly,
+  /**
+   * loads the newest manifest according to what version the API advertises
+   *
+   * if the newest version is already cached locally, uses that. otherwise
+   * downloads the manifest file from the internet
+   */
+  load,
+};

@@ -1,49 +1,106 @@
-import { Store, get, keys, set } from 'idb-keyval';
+import { Store, get as idbGet, keys as idbKeys, set as idbSet } from 'idb-keyval';
+import {
+  allManifest,
+  fetchManifestMetadata,
+  find,
+  get,
+  getAll,
+  isVerbose,
+  loadManifestFromApi,
+  loadedVersion,
+  setApiKey,
+  setManifest,
+  setStoredVersion,
+  verbose,
+} from '../index.js';
 
-import D2Manifest from '..';
-import { compareVersionNumbers } from 'destiny2-utils/manifest';
+import { compareVersionNumbers } from 'destiny2-utils';
+
+export * from '../index.js';
 
 const manifestStore = new Store('manifestDb', 'manifestStore');
 
+/** check keys in indexeddb, find the highest numbered one */
+export const getLatestCachedVersion = async () => {
+  const manifestsByVersion = ((await idbKeys(manifestStore)) as string[]).sort(compareVersionNumbers);
+  return manifestsByVersion[0]?.replace('.json', '') ?? '';
+};
+
 /**
- * D2Manifest but saves manifest obects to indexeddb
+ * loads the newest manifest according to what version the API advertises
+ *
+ * if the newest version is already cached locally, uses that. otherwise
+ * downloads the manifest file from the internet
  */
-export default class D2ManifestNode extends D2Manifest {
-  // check files in the manifestsPath, find the highest numbered one
-  async latest() {
-    const manifestsByVersion = ((await keys(manifestStore)) as string[]).sort(compareVersionNumbers);
-    // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
-    return manifestsByVersion[0]?.replace('.json', '') ?? '';
-  }
+export const load = async () => {
+  const apiVersion = (await fetchManifestMetadata()).version;
+  const latestCachedVersion = await getLatestCachedVersion();
+  isVerbose &&
+    console.log(`version cached: "${latestCachedVersion}"
+version loaded in memory: "${loadedVersion}"
+version in API: "${apiVersion}"`);
+  isVerbose && !latestCachedVersion && console.log('no cached manifest found');
 
-  /**
-   * loads an ALREADY saved manifest file
-   * update()s one from the internet if none is found,
-   * unless suppressUpdate is set
-   */
-  async load(suppressUpdate = false) {
-    const latestManifest = await this.latest();
-    if (latestManifest) {
-      this.verbose && console.log(`loading latest saved manifest: ${latestManifest}`);
-      try {
-        this.manifest = await get(latestManifest, manifestStore);
-        this.verbose && console.log('manifest loaded');
-      } catch (e) {
-        console.log(e);
-      }
-    } else {
-      this.verbose && console.log('no latest manifest found.');
-      if (suppressUpdate) return;
-      this.verbose && console.log('downloading new manifest.');
-      await this.update();
+  let latestIsLoaded = false;
+
+  // there's nothing to do. why did you run this?
+  if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) latestIsLoaded = true;
+  // we already have the latest one cached but it's not loaded
+  else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion)
+    try {
+      const cachedManifest: typeof allManifest = await idbGet(latestCachedVersion, manifestStore);
+      if (!cachedManifest) throw new Error('fetching from indexeddb failed');
+      setManifest(cachedManifest);
+      isVerbose && `manifest loaded from indexeddb. ${Object.keys(allManifest ?? {}).length} components`;
+      latestIsLoaded = true;
+    } catch (e) {
+      console.log(e);
     }
-  }
 
-  /**
-   * saves the loaded manifest to a json file
-   */
-  async save(version: string) {
-    await set(version, this.manifest, manifestStore);
-    return true;
+  // if above checks didn't help, let's do a big download
+  if (!latestIsLoaded) {
+    isVerbose && console.log(`loading from cache failed or wasn't attempted. starting download.`);
+    // dispatch a force download
+    await loadManifestFromApi(true);
+    // save the results for next time
+    save();
   }
-}
+};
+
+/** saves the loaded manifest to a json file */
+export const save = async () => {
+  isVerbose && console.log(`saving manifest to indexeddb`);
+  await idbSet(loadedVersion, allManifest, manifestStore);
+  return true;
+};
+
+export default {
+  /**
+   * if you like doing things THE RIGHT WAY,
+   * you should add an api key to httpClient
+   */
+  setApiKey,
+  /** run this if you love console logs */
+  verbose,
+  /** performs a lookup of a known hash */
+  get,
+  /** returns an array of table contents */
+  getAll,
+  /**
+   * searches an entire manifest table, doing case-insenstive string matching.
+   *
+   * checks against name, description, progressDescription, statName, tierName.
+   *
+   * prefers matching search term to the entire word.
+   *
+   * prefers major item categories, trying to avoid weird same-named stuff like catalysts.
+   */
+  find,
+  /**
+   * loads the newest manifest according to what version the API advertises
+   *
+   * if the newest version is already cached locally, uses that. otherwise
+   * downloads the manifest file from the internet
+   */
+  load,
+};
