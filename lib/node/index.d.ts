@@ -3,7 +3,7 @@ export declare const setManifestsPath: (path: string) => void;
 /** check files in the manifestsPath, find the highest numbered one */
 export declare const getLatestCachedVersion: () => string;
 /**
- * loads an ALREADY saved manifest file (the most recent available)
+ * loads a LOCAL manifest file (the most recent available) only. won't update or DL if it's missing
  *
  * does not require the internet since you aren't checking the API version
  *
@@ -11,7 +11,7 @@ export declare const getLatestCachedVersion: () => string;
  *
  * synchronous!
  */
-export declare const loadOnly: (fromLoad?: boolean) => boolean;
+export declare const loadLocal: (fromLoad?: boolean) => boolean;
 /**
  * loads the newest manifest according to what version the API advertises
  *
@@ -50,13 +50,14 @@ declare const _default: {
      */
     find: <K_2 extends "DestinyPlaceDefinition" | "DestinyActivityDefinition" | "DestinyActivityTypeDefinition" | "DestinyClassDefinition" | "DestinyGenderDefinition" | "DestinyInventoryBucketDefinition" | "DestinyRaceDefinition" | "DestinyTalentGridDefinition" | "DestinyUnlockDefinition" | "DestinyMaterialRequirementSetDefinition" | "DestinySandboxPerkDefinition" | "DestinyStatGroupDefinition" | "DestinyProgressionMappingDefinition" | "DestinyFactionDefinition" | "DestinyVendorGroupDefinition" | "DestinyRewardSourceDefinition" | "DestinyUnlockValueDefinition" | "DestinyItemCategoryDefinition" | "DestinyDamageTypeDefinition" | "DestinyActivityModeDefinition" | "DestinyActivityGraphDefinition" | "DestinyCollectibleDefinition" | "DestinyStatDefinition" | "DestinyItemTierTypeDefinition" | "DestinyMetricDefinition" | "DestinyPlugSetDefinition" | "DestinyPresentationNodeDefinition" | "DestinyRecordDefinition" | "DestinyDestinationDefinition" | "DestinyEquipmentSlotDefinition" | "DestinyInventoryItemDefinition" | "DestinyLocationDefinition" | "DestinyLoreDefinition" | "DestinyObjectiveDefinition" | "DestinyProgressionDefinition" | "DestinyProgressionLevelRequirementDefinition" | "DestinySeasonDefinition" | "DestinySeasonPassDefinition" | "DestinySocketCategoryDefinition" | "DestinySocketTypeDefinition" | "DestinyTraitDefinition" | "DestinyTraitCategoryDefinition" | "DestinyVendorDefinition" | "DestinyMilestoneDefinition" | "DestinyActivityModifierDefinition" | "DestinyReportReasonCategoryDefinition" | "DestinyArtifactDefinition" | "DestinyBreakerTypeDefinition" | "DestinyChecklistDefinition" | "DestinyEnergyTypeDefinition">(tableName: K_2, needle: string, tableFilter?: ((entry: import("bungie-api-ts/destiny2").AllDestinyManifestComponents[K_2][number]) => boolean) | undefined) => import("bungie-api-ts/destiny2").AllDestinyManifestComponents[K_2][number][];
     /**
-     * loads an ALREADY saved manifest file (the most recent available)
-     *
+     * loads a LOCAL manifest file (the most recent available) only. WILL NOT  update or DL if it's missing.
      * does not require the internet since you aren't checking the API version
      *
      * returns true if it managed to load a local version of the manifest
+     *
+     * synchronous!!!
      */
-    loadOnly: (fromLoad?: boolean) => boolean;
+    loadLocal: (fromLoad?: boolean) => boolean;
     /**
      * loads the newest manifest according to what version the API advertises
      *

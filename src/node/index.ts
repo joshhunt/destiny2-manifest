@@ -38,7 +38,7 @@ export const getLatestCachedVersion = () => {
 };
 
 /**
- * loads an ALREADY saved manifest file (the most recent available)
+ * loads a LOCAL manifest file (the most recent available) only. won't update or DL if it's missing
  *
  * does not require the internet since you aren't checking the API version
  *
@@ -46,7 +46,7 @@ export const getLatestCachedVersion = () => {
  *
  * synchronous!
  */
-export const loadOnly = (fromLoad = false) => {
+export const loadLocal = (fromLoad = false) => {
   let manifestDidLoad = false;
 
   const latestCachedVersion = getLatestCachedVersion();
@@ -85,7 +85,7 @@ version loaded in memory: "${loadedVersion}"`);
  */
 export const load = async () => {
   const apiVersion = (await fetchManifestMetadata()).version;
-  const latestCachedVersion = await getLatestCachedVersion();
+  const latestCachedVersion = getLatestCachedVersion();
   isVerbose &&
     console.log(`version cached: "${latestCachedVersion}"
 version loaded in memory: "${loadedVersion}"
@@ -97,7 +97,7 @@ version in API: "${apiVersion}"`);
   if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) latestIsLoaded = true;
   // we already have the latest one cached but it's not loaded
   else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion) {
-    const didLoad = await loadOnly(true);
+    const didLoad = loadLocal(true);
     if (didLoad) latestIsLoaded = true;
   }
   // if above checks didn't help, let's do a big download
@@ -146,13 +146,14 @@ export default {
    */
   find,
   /**
-   * loads an ALREADY saved manifest file (the most recent available)
-   *
+   * loads a LOCAL manifest file (the most recent available) only. WILL NOT  update or DL if it's missing.
    * does not require the internet since you aren't checking the API version
    *
    * returns true if it managed to load a local version of the manifest
+   *
+   * synchronous!!!
    */
-  loadOnly,
+  loadLocal,
   /**
    * loads the newest manifest according to what version the API advertises
    *

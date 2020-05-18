@@ -117,7 +117,8 @@ export const get = <K extends DestinyManifestComponentName>(
   hash: number | string | undefined,
 ): DestinyDefinitionFrom<K> | undefined => {
   hash = Number(hash ?? -99999999);
-  return allManifest?.[componentName][hash];
+  if (!allManifest) throw Error('manifest accessed before being loaded');
+  return allManifest[componentName][hash];
 };
 
 /** returns an array of table contents */
@@ -125,8 +126,17 @@ export const getAll = <K extends DestinyManifestComponentName>(
   componentName: K,
   filter?: (entry: AllDestinyManifestComponents[K][number]) => boolean,
 ): AllDestinyManifestComponents[K][number][] => {
-  const all = Object.values(allManifest?.[componentName] ?? {});
+  if (!allManifest) throw Error('manifest accessed before being loaded');
+  const all = Object.values(allManifest[componentName] ?? {});
   return filter ? all.filter(filter) : all;
+};
+
+/** returns a manifest component (a set of definitions keyed by hash number) */
+export const getComponent = <K extends DestinyManifestComponentName>(
+  componentName: K
+): AllDestinyManifestComponents[K] => {
+  if (!allManifest) throw Error('manifest accessed before being loaded');
+  return allManifest?.[componentName];
 };
 
 export const find = <K extends DestinyManifestComponentName>(
