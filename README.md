@@ -51,7 +51,6 @@ if (manifestLoaded) {
 maybe you're a rebel.   
 you hate default imports and like to gamble on sending no API key (works 9 times out of ten actually..)
 ```node
-// 
 import { get, load, getLatestCachedVersion } from 'destiny2-manifest/browser';
 
 async ()=>{
