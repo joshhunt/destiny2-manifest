@@ -1,15 +1,17 @@
 export * from '../index.js';
 export declare const setManifestsPath: (path: string) => void;
 /** check files in the manifestsPath, find the highest numbered one */
-export declare const getLatestCachedVersion: () => Promise<string>;
+export declare const getLatestCachedVersion: () => string;
 /**
  * loads an ALREADY saved manifest file (the most recent available)
  *
  * does not require the internet since you aren't checking the API version
  *
  * returns true if it managed to load a local version of the manifest
+ *
+ * synchronous!
  */
-export declare const loadOnly: (fromLoad?: boolean) => Promise<boolean>;
+export declare const loadOnly: (fromLoad?: boolean) => boolean;
 /**
  * loads the newest manifest according to what version the API advertises
  *
@@ -18,7 +20,7 @@ export declare const loadOnly: (fromLoad?: boolean) => Promise<boolean>;
  */
 export declare const load: () => Promise<void>;
 /** saves the loaded manifest to a json file */
-export declare const save: () => Promise<boolean>;
+export declare const save: () => boolean;
 declare const _default: {
     /**
      * if you like doing things THE RIGHT WAY,
@@ -54,7 +56,7 @@ declare const _default: {
      *
      * returns true if it managed to load a local version of the manifest
      */
-    loadOnly: (fromLoad?: boolean) => Promise<boolean>;
+    loadOnly: (fromLoad?: boolean) => boolean;
     /**
      * loads the newest manifest according to what version the API advertises
      *

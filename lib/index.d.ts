@@ -26,6 +26,13 @@ export declare let storedVersion: string;
 export declare const setStoredVersion: (version: string) => void;
 /** which version is actually in the manifest variable */
 export declare let loadedVersion: string;
+/**
+ * don't use this directly.
+ *
+ * `load()` from the browser or node version should automatically
+ * deal with making sure we tried to get a cached version first,
+ * loadedVersion is correct, etc.
+ */
 export declare const loadManifestFromApi: (forceUpdate?: boolean) => Promise<void>;
 /** performs a lookup of a known hash */
 export declare const get: <K extends "DestinyPlaceDefinition" | "DestinyActivityDefinition" | "DestinyActivityTypeDefinition" | "DestinyClassDefinition" | "DestinyGenderDefinition" | "DestinyInventoryBucketDefinition" | "DestinyRaceDefinition" | "DestinyTalentGridDefinition" | "DestinyUnlockDefinition" | "DestinyMaterialRequirementSetDefinition" | "DestinySandboxPerkDefinition" | "DestinyStatGroupDefinition" | "DestinyProgressionMappingDefinition" | "DestinyFactionDefinition" | "DestinyVendorGroupDefinition" | "DestinyRewardSourceDefinition" | "DestinyUnlockValueDefinition" | "DestinyItemCategoryDefinition" | "DestinyDamageTypeDefinition" | "DestinyActivityModeDefinition" | "DestinyActivityGraphDefinition" | "DestinyCollectibleDefinition" | "DestinyStatDefinition" | "DestinyItemTierTypeDefinition" | "DestinyMetricDefinition" | "DestinyPlugSetDefinition" | "DestinyPresentationNodeDefinition" | "DestinyRecordDefinition" | "DestinyDestinationDefinition" | "DestinyEquipmentSlotDefinition" | "DestinyInventoryItemDefinition" | "DestinyLocationDefinition" | "DestinyLoreDefinition" | "DestinyObjectiveDefinition" | "DestinyProgressionDefinition" | "DestinyProgressionLevelRequirementDefinition" | "DestinySeasonDefinition" | "DestinySeasonPassDefinition" | "DestinySocketCategoryDefinition" | "DestinySocketTypeDefinition" | "DestinyTraitDefinition" | "DestinyTraitCategoryDefinition" | "DestinyVendorDefinition" | "DestinyMilestoneDefinition" | "DestinyActivityModifierDefinition" | "DestinyReportReasonCategoryDefinition" | "DestinyArtifactDefinition" | "DestinyBreakerTypeDefinition" | "DestinyChecklistDefinition" | "DestinyEnergyTypeDefinition">(componentName: K, hash: number | string | undefined) => AllDestinyManifestComponents[K][number] | undefined;
