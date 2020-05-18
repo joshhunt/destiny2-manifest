@@ -1,6 +1,6 @@
 {
   "name": "destiny2-manifest",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "still poorly coded",
   "main": "index.js",
   "types": "index.d.ts",
