@@ -30,7 +30,7 @@ const enforceManifestsDir = () => {
 };
 
 /** check files in the manifestsPath, find the highest numbered one */
-export const getLatestCachedVersion = async () => {
+export const getLatestCachedVersion = () => {
   enforceManifestsDir();
   const manifestsByVersion = fs.readdirSync(manifestsPath).sort(compareVersionNumbers);
   // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
@@ -43,11 +43,13 @@ export const getLatestCachedVersion = async () => {
  * does not require the internet since you aren't checking the API version
  *
  * returns true if it managed to load a local version of the manifest
+ *
+ * synchronous!
  */
-export const loadOnly = async (fromLoad = false) => {
+export const loadOnly = (fromLoad = false) => {
   let manifestDidLoad = false;
 
-  const latestCachedVersion = await getLatestCachedVersion();
+  const latestCachedVersion = getLatestCachedVersion();
   isVerbose &&
     !fromLoad &&
     console.log(`version cached: "${latestCachedVersion}"
@@ -109,7 +111,7 @@ version in API: "${apiVersion}"`);
 };
 
 /** saves the loaded manifest to a json file */
-export const save = async () => {
+export const save = () => {
   isVerbose && console.log(`saving manifest to "${manifestsPath + loadedVersion + '.json'}".`);
   fs.writeFileSync(manifestsPath + loadedVersion + '.json', JSON.stringify(allManifest));
   return true;

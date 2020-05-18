@@ -93,7 +93,6 @@ let downloadsInProgress: Promise<any>[] = [];
  * deal with making sure we tried to get a cached version first,
  * loadedVersion is correct, etc.
  */
-isVerbose && console.log(`loading from cache failed or wasn't attempted. starting download.`);
 export const loadManifestFromApi = async (forceUpdate = false) => {
   const manifestMetadata = await fetchManifestMetadata();
   isVerbose &&
