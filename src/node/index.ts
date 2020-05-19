@@ -20,7 +20,7 @@ import { sep } from 'path';
 
 export * from '../index.js';
 
-let manifestsPath = `.${sep}manifest${sep}`;
+let manifestsPath = `.${sep}manifests${sep}`;
 export const setManifestsPath = (path: string) => {
   manifestsPath = `${path.replace(/[\\\/]$/, '')}${sep}`;
 };
@@ -32,7 +32,10 @@ const enforceManifestsDir = () => {
 /** check files in the manifestsPath, find the highest numbered one */
 export const getLatestCachedVersion = () => {
   enforceManifestsDir();
-  const manifestsByVersion = fs.readdirSync(manifestsPath).sort(compareVersionNumbers);
+  const manifestsByVersion = fs
+    .readdirSync(manifestsPath)
+    .filter((p) => /^[\w.-]+\.json$/)
+    .sort(compareVersionNumbers);
   // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
   return manifestsByVersion[0]?.replace('.json', '') ?? '';
 };
