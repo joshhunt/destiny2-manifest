@@ -5,6 +5,7 @@ import {
   language,
   fetchManifestMetadata,
   find,
+  setLanguage,
   get,
   getAll,
   isVerbose,
@@ -178,4 +179,5 @@ export default {
    * downloads the manifest file from the internet
    */
   load,
+  setLanguage,
 };

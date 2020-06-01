@@ -51,6 +51,13 @@ export const setApiKey = (apiKey?: string) => {
   httpClient = generateHttpClient(fetch, apiKey);
 };
 
+/**
+ * change the language
+ */
+export const setLanguage = (lang: ManifestLanguage) => {
+  language = lang;
+};
+
 /** await this for the current manifest metadata (version, paths) */
 export let manifestMetadataPromise: Promise<DestinyManifest>;
 

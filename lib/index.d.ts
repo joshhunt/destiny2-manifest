@@ -9,6 +9,10 @@ export declare const verbose: () => void;
  * you should add an api key to httpClient
  */
 export declare const setApiKey: (apiKey?: string | undefined) => void;
+/**
+ * change the language
+ */
+export declare const setLanguage: (lang: ManifestLanguage) => void;
 /** await this for the current manifest metadata (version, paths) */
 export declare let manifestMetadataPromise: Promise<DestinyManifest>;
 /** you could run this to refresh manifest version, or after adding a api key */

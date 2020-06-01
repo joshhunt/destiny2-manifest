@@ -69,5 +69,6 @@ declare const _default: {
      * downloads the manifest file from the internet
      */
     load: () => Promise<void>;
+    setLanguage: (lang: ManifestLanguage) => void;
 };
 export default _default;
