@@ -26,8 +26,7 @@ export declare const fetchManifestMetadata: () => Promise<DestinyManifest>;
 export declare let allManifest: AllDestinyManifestComponents | undefined;
 export declare const setManifest: (manifest: AllDestinyManifestComponents) => void;
 /** stores the manifestVersion that we have cached */
-export declare let storedVersion: string;
-export declare const setStoredVersion: (version: string) => void;
+export declare const setLoadedVersion: (version: string) => void;
 /** which version is actually in the manifest variable */
 export declare let loadedVersion: string;
 /**

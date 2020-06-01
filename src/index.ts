@@ -82,9 +82,8 @@ export const setManifest = (manifest: AllDestinyManifestComponents) => {
 };
 
 /** stores the manifestVersion that we have cached */
-export let storedVersion = 'no manifest storage method set';
-export const setStoredVersion = (version: string) => {
-  storedVersion = version;
+export const setLoadedVersion = (version: string) => {
+  loadedVersion = version;
 };
 
 /** which version is actually in the manifest variable */
@@ -115,7 +114,7 @@ version in API: "${manifestMetadata.version}"`);
   isVerbose && console.log('getting entire manifest from API');
   allManifest = await getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language });
   isVerbose && console.log(`manifest downloaded. ${Object.keys(allManifest ?? {}).length} components`);
-  loadedVersion = `${manifestMetadata.version}__${language}`;
+  setLoadedVersion(`${manifestMetadata.version}__${language}`);
 };
 
 /** performs a lookup of a known hash */

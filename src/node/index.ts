@@ -13,7 +13,7 @@ import {
   loadedVersion,
   setApiKey,
   setManifest,
-  setStoredVersion,
+  setLoadedVersion,
   verbose,
   ManifestLanguage,
 } from '../index.js';
@@ -43,13 +43,8 @@ export const getLatestCachedVersion = (lang: ManifestLanguage) => {
     .filter((p) => p.includes(languageSuffix))
     .sort(compareVersionNumbers);
 
-  return manifestsByVersion[0]
-    ? {
-        // trim 83341.20.04.17.1921-8__en.json to 83341.20.04.17.1921-8
-        version: manifestsByVersion[0]?.replace(`${languageSuffix}.json`, ''),
-        path: manifestsByVersion[0],
-      }
-    : null;
+  // trim 83341.20.04.17.1921-8__en.json to 83341.20.04.17.1921-8__en
+  return manifestsByVersion[0]?.replace(`.json`, '');
 };
 
 /**
@@ -71,21 +66,21 @@ export const loadLocal = (fromLoad = false) => {
 version loaded in memory: "${loadedVersion}"`);
   isVerbose && !latestCachedVersion && console.log('no latest manifest found');
 
-  if (latestCachedVersion && loadedVersion === latestCachedVersion?.version) {
+  if (latestCachedVersion && loadedVersion === latestCachedVersion) {
     isVerbose && console.log(`latest saved version is already loaded`);
     return true;
   }
 
   // let's try loading the saved copy
   if (latestCachedVersion) {
-    isVerbose && console.log(`loading latest saved manifest: ${latestCachedVersion.path}`);
+    isVerbose && console.log(`loading latest saved manifest: ${latestCachedVersion}`);
+
     try {
-      setManifest(JSON.parse(fs.readFileSync(manifestsPath + latestCachedVersion.path, 'utf8')));
+      setManifest(JSON.parse(fs.readFileSync(manifestsPath + latestCachedVersion + '.json', 'utf8')));
       isVerbose && console.log(`manifest loaded from file. ${Object.keys(allManifest ?? {}).length} components`);
       manifestDidLoad = true;
 
-      // TODO: this is never used?
-      // setStoredVersion(latestCachedVersion);
+      setLoadedVersion(latestCachedVersion);
     } catch (e) {
       isVerbose && console.log('manifest failed loading. file missing? malformed?');
       console.log(e);
@@ -101,20 +96,24 @@ version loaded in memory: "${loadedVersion}"`);
  * downloads the manifest file from the internet
  */
 export const load = async () => {
-  const apiVersion = (await fetchManifestMetadata()).version;
+  const apiVersion = `${(await fetchManifestMetadata()).version}__${language}`;
   const latestCachedVersion = getLatestCachedVersion(language);
+
   isVerbose &&
-    console.log(`version cached: "${latestCachedVersion?.path}"
+    console.log(`version cached: "${latestCachedVersion}"
 version loaded in memory: "${loadedVersion}"
 version in API: "${apiVersion}"`);
 
   let latestIsLoaded = false;
 
   // there's nothing to do. why did you run this?
-  if (latestCachedVersion?.version === apiVersion && loadedVersion === latestCachedVersion?.version)
+  if (latestCachedVersion === apiVersion && latestCachedVersion === loadedVersion) {
+    isVerbose && console.log('manifest in memory is latest');
     latestIsLoaded = true;
+  }
   // we already have the latest one cached but it's not loaded
-  else if (latestCachedVersion?.version === apiVersion && loadedVersion !== latestCachedVersion?.version) {
+  else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion) {
+    isVerbose && console.log('loading cached from disk');
     const didLoad = loadLocal(true);
     if (didLoad) latestIsLoaded = true;
   }
