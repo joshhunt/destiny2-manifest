@@ -1,7 +1,11 @@
+import { ManifestLanguage } from '../index.js';
 export * from '../index.js';
 export declare const setManifestsPath: (path: string) => void;
 /** check files in the manifestsPath, find the highest numbered one */
-export declare const getLatestCachedVersion: () => string;
+export declare const getLatestCachedVersion: (lang: ManifestLanguage) => {
+    version: string;
+    path: string;
+} | null;
 /**
  * loads a LOCAL manifest file (the most recent available) only. won't update or DL if it's missing
  *

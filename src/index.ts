@@ -108,7 +108,7 @@ version in API: "${manifestMetadata.version}"`);
   isVerbose && console.log('getting entire manifest from API');
   allManifest = await getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language });
   isVerbose && console.log(`manifest downloaded. ${Object.keys(allManifest ?? {}).length} components`);
-  loadedVersion = manifestMetadata.version;
+  loadedVersion = `${manifestMetadata.version}__${language}`;
 };
 
 /** performs a lookup of a known hash */
@@ -133,7 +133,7 @@ export const getAll = <K extends DestinyManifestComponentName>(
 
 /** returns a manifest component (a set of definitions keyed by hash number) */
 export const getComponent = <K extends DestinyManifestComponentName>(
-  componentName: K
+  componentName: K,
 ): AllDestinyManifestComponents[K] => {
   if (!allManifest) throw Error('manifest accessed before being loaded');
   return allManifest?.[componentName];
@@ -179,6 +179,8 @@ export default {
   setApiKey,
   /** run this if you love console logs */
   verbose,
+
+  language,
   /**
    * don't use this.
    *

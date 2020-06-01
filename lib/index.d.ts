@@ -49,6 +49,7 @@ declare const _default: {
     setApiKey: (apiKey?: string | undefined) => void;
     /** run this if you love console logs */
     verbose: () => void;
+    language: "en";
     /**
      * don't use this.
      *

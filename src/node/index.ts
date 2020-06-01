@@ -2,6 +2,7 @@ import * as fs from 'fs';
 
 import {
   allManifest,
+  language,
   fetchManifestMetadata,
   find,
   get,
@@ -13,6 +14,7 @@ import {
   setManifest,
   setStoredVersion,
   verbose,
+  ManifestLanguage,
 } from '../index.js';
 
 import { compareVersionNumbers } from 'destiny2-utils';
@@ -30,14 +32,23 @@ const enforceManifestsDir = () => {
 };
 
 /** check files in the manifestsPath, find the highest numbered one */
-export const getLatestCachedVersion = () => {
+export const getLatestCachedVersion = (lang: ManifestLanguage) => {
   enforceManifestsDir();
+  const languageSuffix = `__${lang}`;
+
   const manifestsByVersion = fs
     .readdirSync(manifestsPath)
     .filter((p) => /^[\w.-]+\.json$/)
+    .filter((p) => p.includes(languageSuffix))
     .sort(compareVersionNumbers);
-  // trim 83341.20.04.17.1921-8.json to 83341.20.04.17.1921-8
-  return manifestsByVersion[0]?.replace('.json', '') ?? '';
+
+  return manifestsByVersion[0]
+    ? {
+        // trim 83341.20.04.17.1921-8__en.json to 83341.20.04.17.1921-8
+        version: manifestsByVersion[0]?.replace(`${languageSuffix}.json`, ''),
+        path: manifestsByVersion[0],
+      }
+    : null;
 };
 
 /**
@@ -52,26 +63,28 @@ export const getLatestCachedVersion = () => {
 export const loadLocal = (fromLoad = false) => {
   let manifestDidLoad = false;
 
-  const latestCachedVersion = getLatestCachedVersion();
+  const latestCachedVersion = getLatestCachedVersion(language);
   isVerbose &&
     !fromLoad &&
     console.log(`version cached: "${latestCachedVersion}"
 version loaded in memory: "${loadedVersion}"`);
   isVerbose && !latestCachedVersion && console.log('no latest manifest found');
 
-  if (latestCachedVersion && loadedVersion === latestCachedVersion) {
+  if (latestCachedVersion && loadedVersion === latestCachedVersion?.version) {
     isVerbose && console.log(`latest saved version is already loaded`);
     return true;
   }
 
   // let's try loading the saved copy
   if (latestCachedVersion) {
-    isVerbose && console.log(`loading latest saved manifest: ${latestCachedVersion}.json`);
+    isVerbose && console.log(`loading latest saved manifest: ${latestCachedVersion.path}`);
     try {
-      setManifest(JSON.parse(fs.readFileSync(manifestsPath + latestCachedVersion + '.json', 'utf8')));
+      setManifest(JSON.parse(fs.readFileSync(manifestsPath + latestCachedVersion.path, 'utf8')));
       isVerbose && console.log(`manifest loaded from file. ${Object.keys(allManifest ?? {}).length} components`);
       manifestDidLoad = true;
-      setStoredVersion(latestCachedVersion);
+
+      // TODO: this is never used?
+      // setStoredVersion(latestCachedVersion);
     } catch (e) {
       isVerbose && console.log('manifest failed loading. file missing? malformed?');
       console.log(e);
@@ -88,18 +101,19 @@ version loaded in memory: "${loadedVersion}"`);
  */
 export const load = async () => {
   const apiVersion = (await fetchManifestMetadata()).version;
-  const latestCachedVersion = getLatestCachedVersion();
+  const latestCachedVersion = getLatestCachedVersion(language);
   isVerbose &&
-    console.log(`version cached: "${latestCachedVersion}"
+    console.log(`version cached: "${latestCachedVersion?.path}"
 version loaded in memory: "${loadedVersion}"
 version in API: "${apiVersion}"`);
 
   let latestIsLoaded = false;
 
   // there's nothing to do. why did you run this?
-  if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) latestIsLoaded = true;
+  if (latestCachedVersion?.version === apiVersion && loadedVersion === latestCachedVersion?.version)
+    latestIsLoaded = true;
   // we already have the latest one cached but it's not loaded
-  else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion) {
+  else if (latestCachedVersion?.version === apiVersion && loadedVersion !== latestCachedVersion?.version) {
     const didLoad = loadLocal(true);
     if (didLoad) latestIsLoaded = true;
   }
