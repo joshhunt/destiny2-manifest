@@ -10,7 +10,6 @@ import {
   loadedVersion,
   setApiKey,
   setManifest,
-  setLoadedVersion,
   verbose,
 } from '../index.js';
 
