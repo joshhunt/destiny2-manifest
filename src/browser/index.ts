@@ -7,21 +7,27 @@ import {
   getAll,
   isVerbose,
   loadManifestFromApi,
-  loadedVersion,
   setApiKey,
   setManifest,
   verbose,
+  language,
+  ManifestLanguage,
 } from '../index.js';
 
 import { compareVersionNumbers } from 'destiny2-utils';
 
 export * from '../index.js';
 
+let loadedVersion = 'no loaded';
 const manifestStore = new Store('manifestDb', 'manifestStore');
 
 /** check keys in indexeddb, find the highest numbered one */
-export const getLatestCachedVersion = async () => {
-  const manifestsByVersion = ((await idbKeys(manifestStore)) as string[]).sort(compareVersionNumbers);
+export const getLatestCachedVersion = async (lang: ManifestLanguage) => {
+  const languageSuffix = `__${lang}`;
+  const keysInCache = (await idbKeys(manifestStore)) as string[];
+
+  const manifestsByVersion = keysInCache.filter((p) => p.includes(languageSuffix)).sort(compareVersionNumbers);
+
   return manifestsByVersion[0]?.replace('.json', '') ?? '';
 };
 
@@ -32,8 +38,9 @@ export const getLatestCachedVersion = async () => {
  * downloads the manifest file from the internet
  */
 export const load = async () => {
-  const apiVersion = (await fetchManifestMetadata()).version;
-  const latestCachedVersion = await getLatestCachedVersion();
+  const apiVersion = `${(await fetchManifestMetadata()).version}__${language}`;
+  const latestCachedVersion = await getLatestCachedVersion(language);
+
   isVerbose &&
     console.log(`version cached: "${latestCachedVersion}"
 version loaded in memory: "${loadedVersion}"
@@ -43,7 +50,10 @@ version in API: "${apiVersion}"`);
   let latestIsLoaded = false;
 
   // there's nothing to do. why did you run this?
-  if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) latestIsLoaded = true;
+  if (latestCachedVersion === apiVersion && loadedVersion === latestCachedVersion) {
+    latestIsLoaded = true;
+  }
+
   // we already have the latest one cached but it's not loaded
   else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion)
     try {
@@ -52,6 +62,7 @@ version in API: "${apiVersion}"`);
       setManifest(cachedManifest);
       isVerbose && `manifest loaded from indexeddb. ${Object.keys(allManifest ?? {}).length} components`;
       latestIsLoaded = true;
+      loadedVersion = latestCachedVersion;
     } catch (e) {
       console.log(e);
     }
@@ -61,6 +72,8 @@ version in API: "${apiVersion}"`);
     isVerbose && console.log(`loading from cache failed or wasn't attempted. starting download.`);
     // dispatch a force download
     await loadManifestFromApi(true);
+    loadedVersion = apiVersion;
+
     // save the results for next time
     save();
   }
