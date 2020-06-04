@@ -10,10 +10,8 @@ import {
   getAll,
   isVerbose,
   loadManifestFromApi,
-  loadedVersion,
   setApiKey,
   setManifest,
-  setLoadedVersion,
   verbose,
   ManifestLanguage,
 } from '../index.js';
@@ -22,6 +20,8 @@ import { compareVersionNumbers } from 'destiny2-utils';
 import { sep } from 'path';
 
 export * from '../index.js';
+
+let loadedVersion = 'not loaded';
 
 let manifestsPath = `.${sep}manifests${sep}`;
 export const setManifestsPath = (path: string) => {
@@ -80,7 +80,7 @@ version loaded in memory: "${loadedVersion}"`);
       isVerbose && console.log(`manifest loaded from file. ${Object.keys(allManifest ?? {}).length} components`);
       manifestDidLoad = true;
 
-      setLoadedVersion(latestCachedVersion);
+      loadedVersion = latestCachedVersion;
     } catch (e) {
       isVerbose && console.log('manifest failed loading. file missing? malformed?');
       console.log(e);
@@ -111,6 +111,7 @@ version in API: "${apiVersion}"`);
     isVerbose && console.log('manifest in memory is latest');
     latestIsLoaded = true;
   }
+
   // we already have the latest one cached but it's not loaded
   else if (latestCachedVersion === apiVersion && loadedVersion !== latestCachedVersion) {
     isVerbose && console.log('loading cached from disk');
@@ -122,6 +123,9 @@ version in API: "${apiVersion}"`);
     isVerbose && console.log(`loading from cache failed or wasn't attempted. starting download.`);
     // dispatch a force download
     await loadManifestFromApi(true);
+
+    loadedVersion = apiVersion;
+
     // save the results for next time
     save();
   }
@@ -178,5 +182,9 @@ export default {
    * downloads the manifest file from the internet
    */
   load,
+
+  /**
+   * sets the language of the manifest to download
+   */
   setLanguage,
 };

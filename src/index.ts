@@ -28,9 +28,9 @@ export type ManifestLanguage =
   | 'ko'
   | 'zh-cht'
   | 'zh-chs';
-export let language: ManifestLanguage = 'en';
 
 export let isVerbose = false;
+
 /** run this if you love console logs */
 export const verbose = () => {
   isVerbose = true;
@@ -51,8 +51,10 @@ export const setApiKey = (apiKey?: string) => {
   httpClient = generateHttpClient(fetch, apiKey);
 };
 
+export let language: ManifestLanguage = 'en';
+
 /**
- * change the language
+ * sets the language of the manifest to download
  */
 export const setLanguage = (lang: ManifestLanguage) => {
   language = lang;
@@ -81,11 +83,6 @@ export const setManifest = (manifest: AllDestinyManifestComponents) => {
   allManifest = manifest;
 };
 
-/** stores the manifestVersion that we have cached */
-export const setLoadedVersion = (version: string) => {
-  loadedVersion = version;
-};
-
 /** which version is actually in the manifest variable */
 export let loadedVersion = 'nothing loaded';
 
@@ -101,20 +98,23 @@ let downloadsInProgress: Promise<any>[] = [];
  */
 export const loadManifestFromApi = async (forceUpdate = false) => {
   const manifestMetadata = await fetchManifestMetadata();
+  const apiVersion = `${manifestMetadata.version}__${language}`;
+
   isVerbose &&
     !forceUpdate &&
     console.log(`version loaded in memory: "${loadedVersion}"
-version in API: "${manifestMetadata.version}"`);
+version in API: "${apiVersion}"`);
 
   // we're done if the API version already matches the one we have loaded
-  if (!forceUpdate && loadedVersion === manifestMetadata.version) {
+  if (!forceUpdate && loadedVersion === apiVersion) {
     isVerbose && console.log('loaded manifest is already up to date');
     return;
   }
   isVerbose && console.log('getting entire manifest from API');
   allManifest = await getAllDestinyManifestComponents(httpClient, { destinyManifest: manifestMetadata, language });
   isVerbose && console.log(`manifest downloaded. ${Object.keys(allManifest ?? {}).length} components`);
-  setLoadedVersion(`${manifestMetadata.version}__${language}`);
+
+  loadedVersion = apiVersion;
 };
 
 /** performs a lookup of a known hash */
@@ -183,10 +183,10 @@ export default {
    * you should add an api key to httpClient
    */
   setApiKey,
+
   /** run this if you love console logs */
   verbose,
 
-  language,
   /**
    * don't use this.
    *
